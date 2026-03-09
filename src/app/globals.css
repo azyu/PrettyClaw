@@ -1,0 +1,100 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+:root {
+  --color-bg-primary: #0a0a1a;
+  --color-bg-secondary: #1a1a2e;
+  --color-accent: #7aa2ff;
+  --color-text: #e0e0e0;
+  --color-text-dim: #888;
+  --color-dialogue-bg: rgba(10, 10, 30, 0.85);
+  --color-sidebar-bg: rgba(15, 15, 35, 0.9);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg-primary);
+  color: var(--color-text);
+  font-family: 'Segoe UI', 'Noto Sans JP', sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(122, 162, 255, 0.3);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(122, 162, 255, 0.5);
+}
+
+/* Typing cursor animation */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.typing-cursor::after {
+  content: '▌';
+  animation: blink 0.7s step-end infinite;
+  color: var(--color-accent);
+  font-size: 0.85em;
+  margin-left: 1px;
+}
+
+/* Breathing idle animation for character sprites */
+@keyframes idle-breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Subtle glow pulse */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* Smooth text appearance */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(122, 162, 255, 0.3);
+  color: #fff;
+}
+
+/* Focus styling */
+textarea:focus {
+  outline: none;
+}
+
+/* Button hover effects */
+button {
+  transition: all 0.15s ease;
+}
+button:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}

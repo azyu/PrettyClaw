@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 700">
+  <defs>
+    <linearGradient id="sakuraHair" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffaac8"/>
+      <stop offset="100%" stop-color="#dd7799"/>
+    </linearGradient>
+    <linearGradient id="sakuraDress" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff7aaa"/>
+      <stop offset="30%" stop-color="#fff0f5"/>
+      <stop offset="100%" stop-color="#ffe0e8"/>
+    </linearGradient>
+  </defs>
+  <!-- Shadow -->
+  <ellipse cx="200" cy="690" rx="80" ry="10" fill="#000" opacity="0.2"/>
+  <!-- Dress -->
+  <path d="M150 340 Q120 480 80 680 L320 680 Q280 480 250 340 Z" fill="url(#sakuraDress)" stroke="#ffaac8" stroke-width="1"/>
+  <!-- Dress ribbon -->
+  <path d="M170 370 Q200 390 230 370" fill="none" stroke="#ff7aaa" stroke-width="2"/>
+  <circle cx="200" cy="375" r="5" fill="#ff7aaa"/>
+  <!-- Neck -->
+  <rect x="185" y="300" width="30" height="45" fill="#FFE4C4" rx="5"/>
+  <!-- Head -->
+  <ellipse cx="200" cy="240" rx="65" ry="75" fill="#FFE4C4"/>
+  <!-- Hair back - twin tails -->
+  <path d="M130 210 Q100 300 90 450 Q110 420 120 350 Q130 280 135 220 Z" fill="url(#sakuraHair)"/>
+  <path d="M270 210 Q300 300 310 450 Q290 420 280 350 Q270 280 265 220 Z" fill="url(#sakuraHair)"/>
+  <!-- Hair front -->
+  <path d="M135 225 Q140 170 170 158 Q190 152 200 155 Q210 152 230 158 Q260 170 265 225 L258 205 Q240 178 200 172 Q160 178 142 205 Z" fill="url(#sakuraHair)"/>
+  <!-- Bangs - messy cute style -->
+  <path d="M140 225 Q150 195 162 225" fill="url(#sakuraHair)"/>
+  <path d="M158 220 Q170 188 180 220" fill="url(#sakuraHair)"/>
+  <path d="M195 218 Q205 185 215 218" fill="url(#sakuraHair)"/>
+  <path d="M220 220 Q230 192 242 222" fill="url(#sakuraHair)"/>
+  <path d="M238 225 Q250 195 260 225" fill="url(#sakuraHair)"/>
+  <!-- Hair accessories - twin tail ties -->
+  <circle cx="125" cy="220" r="8" fill="#ff7aaa" stroke="#fff" stroke-width="1"/>
+  <circle cx="275" cy="220" r="8" fill="#ff7aaa" stroke="#fff" stroke-width="1"/>
+  <!-- Eyes - bigger, more energetic -->
+  <g transform="translate(170, 238)">
+    <ellipse rx="14" ry="16" fill="#fff"/>
+    <ellipse rx="10" ry="12" fill="#DD4488"/>
+    <ellipse rx="5" ry="6" fill="#BB2266"/>
+    <circle cx="4" cy="-5" r="4" fill="#fff" opacity="0.9"/>
+    <circle cx="-3" cy="3" r="2" fill="#fff" opacity="0.5"/>
+  </g>
+  <g transform="translate(230, 238)">
+    <ellipse rx="14" ry="16" fill="#fff"/>
+    <ellipse rx="10" ry="12" fill="#DD4488"/>
+    <ellipse rx="5" ry="6" fill="#BB2266"/>
+    <circle cx="4" cy="-5" r="4" fill="#fff" opacity="0.9"/>
+    <circle cx="-3" cy="3" r="2" fill="#fff" opacity="0.5"/>
+  </g>
+  <!-- Eyebrows - cheerful -->
+  <path d="M155 214 Q170 208 185 214" fill="none" stroke="#dd7799" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M215 214 Q230 208 245 214" fill="none" stroke="#dd7799" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Nose -->
+  <path d="M198 258 Q200 262 202 258" fill="none" stroke="#E8C8A8" stroke-width="1.5"/>
+  <!-- Mouth - big smile -->
+  <path d="M182 275 Q200 292 218 275" fill="#fff" stroke="#E88888" stroke-width="2" stroke-linecap="round"/>
+  <path d="M186 275 Q200 282 214 275" fill="#E88888" opacity="0.3"/>
+  <!-- Blush -->
+  <ellipse cx="162" cy="265" rx="14" ry="7" fill="#FFB6C1" opacity="0.4"/>
+  <ellipse cx="238" cy="265" rx="14" ry="7" fill="#FFB6C1" opacity="0.4"/>
+  <!-- Star hair clip -->
+  <g transform="translate(260, 195) rotate(15)">
+    <polygon points="0,-10 3,-3 10,-3 5,2 7,10 0,5 -7,10 -5,2 -10,-3 -3,-3" fill="#FFD700"/>
+  </g>
+</svg>

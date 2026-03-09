@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a0a2a"/>
+      <stop offset="60%" stop-color="#1a1a3e"/>
+      <stop offset="100%" stop-color="#12122a"/>
+    </linearGradient>
+    <radialGradient id="moonGlow" cx="80%" cy="15%">
+      <stop offset="0%" stop-color="#7aa2ff" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+  </defs>
+  <!-- Sky -->
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <rect width="1920" height="1080" fill="url(#moonGlow)"/>
+  <!-- Moon -->
+  <circle cx="1500" cy="150" r="50" fill="#d4e0ff" opacity="0.8"/>
+  <circle cx="1510" cy="145" r="45" fill="#0a0a2a" opacity="0.3"/>
+  <!-- Stars -->
+  <circle cx="200" cy="80" r="1.5" fill="#fff" opacity="0.7"/>
+  <circle cx="400" cy="120" r="1" fill="#fff" opacity="0.5"/>
+  <circle cx="600" cy="60" r="1.5" fill="#fff" opacity="0.8"/>
+  <circle cx="800" cy="100" r="1" fill="#fff" opacity="0.4"/>
+  <circle cx="1000" cy="50" r="1.5" fill="#fff" opacity="0.6"/>
+  <circle cx="1200" cy="90" r="1" fill="#fff" opacity="0.7"/>
+  <circle cx="300" cy="200" r="1" fill="#fff" opacity="0.3"/>
+  <circle cx="700" cy="180" r="1.5" fill="#fff" opacity="0.5"/>
+  <circle cx="1100" cy="160" r="1" fill="#fff" opacity="0.6"/>
+  <circle cx="1400" cy="80" r="1" fill="#fff" opacity="0.4"/>
+  <!-- Window frame -->
+  <rect x="600" y="100" width="720" height="500" rx="8" fill="none" stroke="#3a3a5e" stroke-width="4"/>
+  <line x1="960" y1="100" x2="960" y2="600" stroke="#3a3a5e" stroke-width="3"/>
+  <line x1="600" y1="350" x2="1320" y2="350" stroke="#3a3a5e" stroke-width="3"/>
+  <!-- Window glass glow -->
+  <rect x="604" y="104" width="352" height="242" fill="#1a2a4a" opacity="0.3"/>
+  <rect x="964" y="104" width="352" height="242" fill="#1a2a4a" opacity="0.25"/>
+  <!-- Floor -->
+  <rect x="0" y="700" width="1920" height="380" fill="#151525"/>
+  <line x1="0" y1="700" x2="1920" y2="700" stroke="#2a2a4a" stroke-width="2"/>
+  <!-- Room walls -->
+  <rect x="0" y="600" width="1920" height="100" fill="#1a1a30"/>
+  <!-- Furniture silhouettes -->
+  <rect x="100" y="550" width="300" height="150" rx="4" fill="#1a1a2e" stroke="#2a2a4a" stroke-width="1"/>
+  <rect x="1500" y="500" width="200" height="200" rx="4" fill="#1a1a2e" stroke="#2a2a4a" stroke-width="1"/>
+  <!-- Lamp glow -->
+  <circle cx="250" cy="480" r="60" fill="#7aa2ff" opacity="0.05"/>
+  <rect x="235" y="450" width="30" height="100" rx="2" fill="#2a2a4a"/>
+  <ellipse cx="250" cy="450" rx="25" ry="10" fill="#3a3a5e"/>
+</svg>

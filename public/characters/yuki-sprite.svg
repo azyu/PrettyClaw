@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 700">
+  <defs>
+    <linearGradient id="yukiHair" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a8c8ff"/>
+      <stop offset="100%" stop-color="#6a8acc"/>
+    </linearGradient>
+    <linearGradient id="yukiDress" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a3a5e"/>
+      <stop offset="100%" stop-color="#1a2a4e"/>
+    </linearGradient>
+  </defs>
+  <!-- Shadow -->
+  <ellipse cx="200" cy="690" rx="80" ry="10" fill="#000" opacity="0.2"/>
+  <!-- Dress/body -->
+  <path d="M140 340 Q130 500 100 680 L300 680 Q270 500 260 340 Z" fill="url(#yukiDress)" stroke="#3a4a6e" stroke-width="1"/>
+  <!-- Collar detail -->
+  <path d="M160 340 L200 380 L240 340" fill="none" stroke="#7aa2ff" stroke-width="2"/>
+  <!-- Neck -->
+  <rect x="185" y="300" width="30" height="45" fill="#FFE4C4" rx="5"/>
+  <!-- Head -->
+  <ellipse cx="200" cy="240" rx="65" ry="75" fill="#FFE4C4"/>
+  <!-- Hair back -->
+  <path d="M130 200 Q120 300 110 400 L140 350 Q150 280 145 220 Z" fill="url(#yukiHair)" opacity="0.8"/>
+  <path d="M270 200 Q280 300 290 400 L260 350 Q250 280 255 220 Z" fill="url(#yukiHair)" opacity="0.8"/>
+  <!-- Hair front -->
+  <path d="M135 220 Q140 170 170 160 Q190 155 200 158 Q210 155 230 160 Q260 170 265 220 L260 200 Q240 175 200 170 Q160 175 140 200 Z" fill="url(#yukiHair)"/>
+  <!-- Bangs -->
+  <path d="M145 220 Q155 195 165 220" fill="url(#yukiHair)"/>
+  <path d="M162 215 Q172 190 182 218" fill="url(#yukiHair)"/>
+  <path d="M180 218 Q190 188 200 215" fill="url(#yukiHair)"/>
+  <path d="M218 215 Q228 190 238 220" fill="url(#yukiHair)"/>
+  <path d="M235 220 Q245 195 255 220" fill="url(#yukiHair)"/>
+  <!-- Side hair -->
+  <path d="M130 230 Q125 300 120 380 Q130 360 135 300 Q138 260 135 230 Z" fill="url(#yukiHair)"/>
+  <path d="M270 230 Q275 300 280 380 Q270 360 265 300 Q262 260 265 230 Z" fill="url(#yukiHair)"/>
+  <!-- Eyes -->
+  <g transform="translate(170, 240)">
+    <ellipse rx="12" ry="14" fill="#fff"/>
+    <ellipse rx="8" ry="10" fill="#4477CC"/>
+    <ellipse rx="4" ry="5" fill="#2255AA"/>
+    <circle cx="3" cy="-4" r="3" fill="#fff" opacity="0.8"/>
+  </g>
+  <g transform="translate(230, 240)">
+    <ellipse rx="12" ry="14" fill="#fff"/>
+    <ellipse rx="8" ry="10" fill="#4477CC"/>
+    <ellipse rx="4" ry="5" fill="#2255AA"/>
+    <circle cx="3" cy="-4" r="3" fill="#fff" opacity="0.8"/>
+  </g>
+  <!-- Eyebrows -->
+  <path d="M155 218 Q170 212 185 216" fill="none" stroke="#6a8acc" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M215 216 Q230 212 245 218" fill="none" stroke="#6a8acc" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Nose -->
+  <path d="M198 258 Q200 262 202 258" fill="none" stroke="#E8C8A8" stroke-width="1.5"/>
+  <!-- Mouth -->
+  <path d="M188 278 Q200 285 212 278" fill="none" stroke="#E88888" stroke-width="2" stroke-linecap="round"/>
+  <!-- Blush -->
+  <ellipse cx="165" cy="268" rx="12" ry="6" fill="#FFB6C1" opacity="0.3"/>
+  <ellipse cx="235" cy="268" rx="12" ry="6" fill="#FFB6C1" opacity="0.3"/>
+  <!-- Ribbon -->
+  <g transform="translate(260, 190)">
+    <path d="M0 0 L15 -12 L8 0 L15 12 Z" fill="#7aa2ff"/>
+    <path d="M0 0 L-15 -10 L-8 0 L-15 10 Z" fill="#7aa2ff"/>
+    <circle r="4" fill="#5a8aee"/>
+  </g>
+</svg>

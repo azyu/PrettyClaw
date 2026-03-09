@@ -1,0 +1,128 @@
+"use client";
+
+import Image from "next/image";
+import { motion } from "framer-motion";
+import { useAppStore } from "@/stores/useAppStore";
+
+export function CharacterSidebar() {
+  const characters = useAppStore((s) => s.characters);
+  const activeCharacterId = useAppStore((s) => s.activeCharacterId);
+  const selectCharacter = useAppStore((s) => s.selectCharacter);
+  const connectionStatus = useAppStore((s) => s.connectionStatus);
+  const toggleSettings = useAppStore((s) => s.toggleSettings);
+  const streamStates = useAppStore((s) => s.streamStates);
+  const activeSessionKeys = useAppStore((s) => s.activeSessionKeys);
+
+  return (
+    <div className="flex flex-col h-full w-[200px] min-w-[200px]"
+      style={{ background: "var(--color-sidebar-bg)", borderRight: "1px solid rgba(122,162,255,0.15)" }}>
+
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-white/10">
+        <h1 className="text-sm font-bold tracking-wider" style={{ color: "var(--color-accent)" }}>
+          PrettyClaw
+        </h1>
+        <div className="flex items-center gap-1.5 mt-1">
+          <div className={`w-2 h-2 rounded-full ${
+            connectionStatus === "connected" ? "bg-green-400" :
+            connectionStatus === "connecting" ? "bg-yellow-400 animate-pulse" :
+            "bg-red-400"
+          }`} />
+          <span className="text-xs" style={{ color: "var(--color-text-dim)" }}>
+            {connectionStatus === "connected" ? "Connected" :
+             connectionStatus === "connecting" ? "Connecting..." :
+             "Disconnected"}
+          </span>
+        </div>
+      </div>
+
+      {/* Character list */}
+      <div className="flex-1 overflow-y-auto py-2">
+        {characters.map((char) => {
+          const isActive = char.id === activeCharacterId;
+          const sk = activeSessionKeys.get(char.id) || char.sessionKey;
+          const charStream = streamStates.get(sk);
+          const isThinking = charStream?.streaming ?? false;
+          return (
+            <motion.button
+              key={char.id}
+              onClick={() => selectCharacter(char.id)}
+              className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors"
+              style={{
+                background: isActive ? "rgba(122,162,255,0.12)" : "transparent",
+                borderLeft: isActive ? `3px solid ${char.theme.accent}` : "3px solid transparent",
+              }}
+              whileHover={{ backgroundColor: "rgba(122,162,255,0.08)" }}
+              whileTap={{ scale: 0.98 }}
+            >
+              {/* Avatar */}
+              <div className="relative shrink-0">
+                <div
+                  className="w-10 h-10 rounded-full overflow-hidden"
+                  style={{
+                    border: `2px solid ${isActive ? char.theme.accent : "transparent"}`,
+                  }}
+                >
+                  <Image
+                    src={char.avatar}
+                    alt={char.displayName}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {/* Thinking ring around avatar */}
+                {isThinking && (
+                  <motion.div
+                    className="absolute inset-[-3px] rounded-full"
+                    style={{
+                      border: `2px solid ${char.theme.accent}`,
+                      borderTopColor: "transparent",
+                    }}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-medium truncate" style={{ color: isActive ? char.theme.nameColor : "var(--color-text)" }}>
+                    {char.displayName}
+                  </span>
+                  {isThinking && (
+                    <motion.span
+                      className="shrink-0 text-[10px]"
+                      style={{ color: char.theme.accent }}
+                      animate={{ opacity: [0.4, 1, 0.4] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      thinking...
+                    </motion.span>
+                  )}
+                </div>
+                <div className="text-xs truncate" style={{ color: "var(--color-text-dim)" }}>
+                  {char.description || char.displayName}
+                </div>
+              </div>
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {/* Settings button */}
+      <div className="px-4 py-3 border-t border-white/10">
+        <button
+          onClick={toggleSettings}
+          className="w-full text-xs py-2 px-3 rounded transition-colors"
+          style={{
+            background: "rgba(122,162,255,0.1)",
+            color: "var(--color-text-dim)",
+            border: "1px solid rgba(122,162,255,0.2)",
+          }}
+        >
+          Settings
+        </button>
+      </div>
+    </div>
+  );
+}

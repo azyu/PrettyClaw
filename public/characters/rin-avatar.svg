@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <clipPath id="rCircle"><circle cx="50" cy="50" r="48"/></clipPath>
+    <linearGradient id="rHair" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c8aaff"/>
+      <stop offset="100%" stop-color="#8866cc"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="#1a1028"/>
+  <g clip-path="url(#rCircle)">
+    <ellipse cx="50" cy="58" rx="27" ry="31" fill="#FFE0D0"/>
+    <path d="M23 54 Q26 38 37 30 Q47 26 50 28 Q53 26 63 30 Q74 38 77 54 L72 44 Q64 33 50 30 Q36 33 28 44 Z" fill="url(#rHair)"/>
+    <rect x="25" y="44" width="10" height="12" fill="url(#rHair)" rx="1"/>
+    <rect x="37" y="43" width="10" height="13" fill="url(#rHair)" rx="1"/>
+    <rect x="49" y="42" width="10" height="13" fill="url(#rHair)" rx="1"/>
+    <rect x="61" y="43" width="10" height="12" fill="url(#rHair)" rx="1"/>
+    <rect x="73" y="44" width="8" height="11" fill="url(#rHair)" rx="1"/>
+    <path d="M20 50 Q17 65 15 82 Q22 72 23 60 Q24 52 22 50 Z" fill="url(#rHair)"/>
+    <path d="M80 50 Q83 65 85 82 Q78 72 77 60 Q76 52 78 50 Z" fill="url(#rHair)"/>
+    <g transform="translate(39, 57)"><ellipse rx="5" ry="5.5" fill="#fff"/><ellipse rx="3" ry="4" fill="#7744BB"/><circle cx="1" cy="-1.5" r="1.5" fill="#fff" opacity="0.8"/></g>
+    <g transform="translate(61, 57)"><ellipse rx="5" ry="5.5" fill="#fff"/><ellipse rx="3" ry="4" fill="#7744BB"/><circle cx="1" cy="-1.5" r="1.5" fill="#fff" opacity="0.8"/></g>
+    <circle cx="39" cy="57" r="8" fill="none" stroke="#8a7aaa" stroke-width="1"/>
+    <circle cx="61" cy="57" r="8" fill="none" stroke="#8a7aaa" stroke-width="1"/>
+    <line x1="47" y1="57" x2="53" y2="57" stroke="#8a7aaa" stroke-width="1"/>
+    <path d="M44 71 Q50 74 56 71" fill="none" stroke="#D08080" stroke-width="1.5" stroke-linecap="round"/>
+    <ellipse cx="34" cy="66" rx="4" ry="2" fill="#FFB6C1" opacity="0.2"/>
+    <ellipse cx="66" cy="66" rx="4" ry="2" fill="#FFB6C1" opacity="0.2"/>
+  </g>
+  <circle cx="50" cy="50" r="48" fill="none" stroke="#aa7aff" stroke-width="2" opacity="0.5"/>
+</svg>
