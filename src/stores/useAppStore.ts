@@ -74,6 +74,7 @@ interface AppState {
   toggleSessionHistory: () => void;
   setCharacters: (characters: CharacterConfig[]) => void;
   loadCharacters: () => Promise<void>;
+  bootstrapAgents: () => Promise<void>;
   loadAgents: () => Promise<void>;
   loadHistory: (sessionKey: string, characterId: string) => Promise<void>;
   ensureSession: (characterId: string) => Promise<void>;
@@ -321,6 +322,25 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
     } catch (e) {
       console.warn("Failed to load characters:", e);
+    }
+  },
+
+  bootstrapAgents: async () => {
+    try {
+      const res = await fetch("/api/bootstrap-agents", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        console.warn("Failed to bootstrap OpenClaw agents:", data?.error || res.statusText);
+        return;
+      }
+      if (typeof data?.waitMs === "number" && data.waitMs > 0) {
+        await new Promise((resolve) => setTimeout(resolve, data.waitMs));
+      }
+      if (Array.isArray(data?.created) && data.created.length > 0) {
+        console.warn(`Bootstrapped ${data.created.length} OpenClaw agents`);
+      }
+    } catch (e) {
+      console.warn("Failed to bootstrap OpenClaw agents:", e);
     }
   },
 

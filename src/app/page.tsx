@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CharacterSidebar } from "@/components/CharacterSidebar";
 import { SceneLayer } from "@/components/SceneLayer";
 import { DialogueBox } from "@/components/DialogueBox";
@@ -14,18 +14,40 @@ import { useAppStore } from "@/stores/useAppStore";
 
 export default function Home() {
   const loadCharacters = useAppStore((s) => s.loadCharacters);
+  const bootstrapAgents = useAppStore((s) => s.bootstrapAgents);
   const connect = useAppStore((s) => s.connect);
   const connectionStatus = useAppStore((s) => s.connectionStatus);
+  const [readyToConnect, setReadyToConnect] = useState(false);
+  const initialized = useRef(false);
 
   useEffect(() => {
-    loadCharacters();
-  }, [loadCharacters]);
+    if (initialized.current) {
+      return;
+    }
+    initialized.current = true;
+
+    let cancelled = false;
+
+    const initialize = async () => {
+      await loadCharacters();
+      await bootstrapAgents();
+      if (!cancelled) {
+        setReadyToConnect(true);
+      }
+    };
+
+    void initialize();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [bootstrapAgents, loadCharacters]);
 
   useEffect(() => {
-    if (connectionStatus === "disconnected") {
+    if (readyToConnect && connectionStatus === "disconnected") {
       connect();
     }
-  }, [connect, connectionStatus]);
+  }, [connect, connectionStatus, readyToConnect]);
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       {/* Left sidebar - character selection */}
