@@ -1,4 +1,23 @@
 /** Character definition — maps a VN character to an OpenClaw agent/session */
+export interface SpriteRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface SpriteOverlayPart {
+  rect: SpriteRect;
+  frames: string[];
+}
+
+export interface CharacterSpriteMeta {
+  sourceWidth: number;
+  sourceHeight: number;
+  eyes?: SpriteOverlayPart;
+  mouth?: SpriteOverlayPart;
+}
+
 export interface CharacterConfig {
   id: string;
   displayName: string;
@@ -14,6 +33,8 @@ export interface CharacterConfig {
   };
   /** Sprite display scale (default: 1) */
   spriteScale?: number;
+  /** Optional eye/mouth overlay metadata in source-image pixels */
+  spriteMeta?: CharacterSpriteMeta;
   /** Short description shown in sidebar */
   description?: string;
   personaPrompt: string;

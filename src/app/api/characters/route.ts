@@ -3,16 +3,41 @@ import { readFile, writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
+import type { CharacterConfig } from "@/types";
 import { DEFAULT_CHARACTERS } from "@/lib/characters";
 
 const CONFIG_DIR = join(homedir(), ".config", "prettyclaw");
 const CONFIG_FILE = join(CONFIG_DIR, "characters.json");
 
+function mergeCharacterConfig(character: CharacterConfig): CharacterConfig {
+  const fallback = DEFAULT_CHARACTERS.find((item) => item.id === character.id);
+  if (!fallback) {
+    return character;
+  }
+
+  return {
+    ...fallback,
+    ...character,
+    theme: {
+      ...fallback.theme,
+      ...character.theme,
+    },
+    spriteMeta: character.spriteMeta
+      ? {
+          ...fallback.spriteMeta,
+          ...character.spriteMeta,
+          eyes: character.spriteMeta.eyes ?? fallback.spriteMeta?.eyes,
+          mouth: character.spriteMeta.mouth ?? fallback.spriteMeta?.mouth,
+        }
+      : fallback.spriteMeta,
+  };
+}
+
 export async function GET() {
   try {
     if (existsSync(CONFIG_FILE)) {
       const raw = await readFile(CONFIG_FILE, "utf-8");
-      const characters = JSON.parse(raw);
+      const characters = (JSON.parse(raw) as CharacterConfig[]).map(mergeCharacterConfig);
       return NextResponse.json({ characters, source: "config" });
     }
   } catch (e) {

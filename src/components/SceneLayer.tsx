@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import { motion, AnimatePresence } from "framer-motion";
+import { CharacterSprite } from "@/components/CharacterSprite";
 import { useAppStore } from "@/stores/useAppStore";
 
 export function SceneLayer() {
@@ -71,7 +72,7 @@ export function SceneLayer() {
               },
             }}
           >
-            <div className="relative" style={{ transform: `scale(${activeChar.spriteScale ?? 1})`, transformOrigin: "bottom center" }}>
+            <div className="relative">
               <motion.div
                 className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full blur-3xl"
                 style={{ background: `${activeChar.theme.accent}15` }}
@@ -81,13 +82,7 @@ export function SceneLayer() {
                 } : {}}
                 transition={{ duration: 2, repeat: Infinity }}
               />
-              <img
-                src={activeChar.sprite}
-                alt={activeChar.displayName}
-                style={{
-                  filter: `drop-shadow(0 0 25px ${activeChar.theme.accent}25)`,
-                }}
-              />
+              <CharacterSprite character={activeChar} isStreaming={isStreaming} />
             </div>
           </motion.div>
         )}

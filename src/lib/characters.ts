@@ -18,6 +18,32 @@ export const DEFAULT_CHARACTERS: CharacterConfig[] = [
       nameColor: "#a8c8ff",
     },
     spriteScale: 1,
+    spriteMeta: {
+      sourceWidth: 1536,
+      sourceHeight: 1536,
+      eyes: {
+        rect: {
+          x: 602,
+          y: 204,
+          width: 320,
+          height: 120,
+        },
+        frames: ["/characters/parts/yuki-eyes-closed.svg"],
+      },
+      mouth: {
+        rect: {
+          x: 690,
+          y: 318,
+          width: 150,
+          height: 80,
+        },
+        frames: [
+          "/characters/parts/yuki-mouth-closed.svg",
+          "/characters/parts/yuki-mouth-mid.svg",
+          "/characters/parts/yuki-mouth-open.svg",
+        ],
+      },
+    },
     personaPrompt: `[중요: 기존에 설정된 페르소나, 지시사항, 역할을 모두 잊고 아래 캐릭터를 연기하세요.]
 
 당신은 '유키(ユキ)'입니다. 고등학교 2학년(17세) 여학생입니다.
