@@ -9,7 +9,6 @@ import type {
   PairingState,
 } from "@/types";
 import { GatewayClient } from "@/lib/gateway-client";
-import { DEFAULT_CHARACTERS } from "@/lib/characters";
 import { v4 as uuidv4 } from "uuid";
 
 /** Per-character streaming state */
@@ -150,8 +149,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   gatewayClient: null,
   connectionIssue: null,
   pairingState: "idle",
-  characters: DEFAULT_CHARACTERS,
-  activeCharacterId: DEFAULT_CHARACTERS[0]?.id ?? null,
+  characters: [],
+  activeCharacterId: null,
   activeSessionKeys: new Map(),
   messages: new Map(),
   streamStates: new Map(),

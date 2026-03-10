@@ -2,14 +2,25 @@ import { readFile, writeFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
-import type { CharacterConfig } from "@/types";
-import { DEFAULT_CHARACTERS } from "@/lib/characters";
+import type { CharacterConfig } from "../types";
 
 const CONFIG_DIR = join(homedir(), ".config", "prettyclaw");
 const CONFIG_FILE = join(CONFIG_DIR, "characters.json");
+const TEMPLATE_FILE = join(process.cwd(), "config", "characters.template.json");
 
-export function mergeCharacterConfig(character: CharacterConfig): CharacterConfig {
-  const fallback = DEFAULT_CHARACTERS.find((item) => item.id === character.id);
+interface LoadCharacterConfigOptions {
+  configDir?: string;
+  configFile?: string;
+  templateFile?: string;
+}
+
+async function readCharacterConfigFile(filePath: string) {
+  const raw = await readFile(filePath, "utf-8");
+  return JSON.parse(raw) as CharacterConfig[];
+}
+
+export function mergeCharacterConfig(character: CharacterConfig, templateCharacters: CharacterConfig[]): CharacterConfig {
+  const fallback = templateCharacters.find((item) => item.id === character.id);
   if (!fallback) {
     return character;
   }
@@ -32,11 +43,21 @@ export function mergeCharacterConfig(character: CharacterConfig): CharacterConfi
   };
 }
 
-export async function loadCharacterConfig() {
+async function readCharacterTemplate(templateFile: string) {
+  return readCharacterConfigFile(templateFile);
+}
+
+export async function loadCharacterConfig(options: LoadCharacterConfigOptions = {}) {
+  const configDir = options.configDir ?? CONFIG_DIR;
+  const configFile = options.configFile ?? CONFIG_FILE;
+  const templateFile = options.templateFile ?? TEMPLATE_FILE;
+  const templateCharacters = await readCharacterTemplate(templateFile);
+
   try {
-    if (existsSync(CONFIG_FILE)) {
-      const raw = await readFile(CONFIG_FILE, "utf-8");
-      const characters = (JSON.parse(raw) as CharacterConfig[]).map(mergeCharacterConfig);
+    if (existsSync(configFile)) {
+      const characters = (await readCharacterConfigFile(configFile)).map((character) =>
+        mergeCharacterConfig(character, templateCharacters),
+      );
       return { characters, source: "config" as const };
     }
   } catch (e) {
@@ -44,13 +65,13 @@ export async function loadCharacterConfig() {
   }
 
   try {
-    if (!existsSync(CONFIG_DIR)) {
-      await mkdir(CONFIG_DIR, { recursive: true });
+    if (!existsSync(configDir)) {
+      await mkdir(configDir, { recursive: true });
     }
-    await writeFile(CONFIG_FILE, JSON.stringify(DEFAULT_CHARACTERS, null, 2), "utf-8");
+    await writeFile(configFile, JSON.stringify(templateCharacters, null, 2), "utf-8");
   } catch {
     // Non-critical
   }
 
-  return { characters: DEFAULT_CHARACTERS, source: "default" as const };
+  return { characters: templateCharacters, source: "template" as const };
 }

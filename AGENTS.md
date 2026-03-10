@@ -1,132 +1,149 @@
 # AGENTS.md — PrettyClaw
 
+> `CLAUDE.md` is a symlink to `AGENTS.md`.
+
 ## Read First
 
-- `docs/references.md` — 프로젝트 컨셉, 기술 스택, ADR, 파일 맵
-- `docs/openclaw-persona-research.md` — OpenClaw 멀티에이전트 아키텍처 분석
-- `docs/persona-override-guide.md` — 페르소나 오버라이드 방법 정리
-- `.context/TASKS.md` — 태스크 목록 및 우선순위
-- `.context/STEERING.md` — 에이전트 조율 규칙
+- `docs/references.md` — project concept, tech stack, ADRs, file map
+- `docs/openclaw-persona-research.md` — OpenClaw multi-agent architecture analysis
+- `docs/persona-override-guide.md` — persona override notes
+- `.context/TASKS.md` — task list and priorities
+- `.context/STEERING.md` — agent coordination rules
 
 ## Project Structure
 
-```
+```text
 PrettyClaw/
+├── config/
+│   └── characters.template.json  # seed template for character config
 ├── src/
-│   ├── app/page.tsx               # 진입점 (auto-connect, layout)
-│   ├── app/layout.tsx             # 루트 레이아웃
-│   ├── app/globals.css            # Tailwind 4 스타일
-│   ├── app/api/characters/route.ts
-│   ├── app/api/push-persona/route.ts  # deprecated
-│   ├── components/                # UI 컴포넌트 (9개)
-│   ├── stores/useAppStore.ts      # Zustand store (708 LOC) ⚠️
-│   ├── lib/gateway-client.ts      # WebSocket RPC 클라이언트
-│   ├── lib/characters.ts          # 캐릭터 기본 설정
-│   └── types/index.ts             # 공유 타입
+│   ├── app/
+│   │   ├── page.tsx                  # initial load → bootstrap → auto-connect
+│   │   ├── layout.tsx
+│   │   ├── globals.css
+│   │   └── api/
+│   │       ├── characters/route.ts
+│   │       ├── bootstrap-agents/route.ts
+│   │       └── push-persona/route.ts # deprecated
+│   ├── components/                   # 10 VN UI components
+│   ├── stores/useAppStore.ts         # single Zustand store (763 LOC) ⚠️
+│   ├── lib/
+│   │   ├── character-config.ts       # loads/seeds ~/.config/prettyclaw/characters.json
+│   │   ├── agent-bootstrap.ts        # syncs agent workspace prompt files
+│   │   ├── gateway-client.ts
+│   │   ├── gateway-device-auth.ts
+│   │   ├── gateway-connection.ts
+│   │   └── *.test.ts                 # node:test unit tests
+│   └── types/index.ts
 ├── public/
-│   ├── backgrounds/               # SVG 배경 (3개)
-│   └── characters/                # 캐릭터 아바타/스프라이트
-├── docs/                          # 프로젝트 문서
-├── .context/                      # 멀티에이전트 조율
-├── AGENTS.md                      # ← 이 파일
-├── CLAUDE.md                      # → AGENTS.md symlink
+│   ├── backgrounds/
+│   └── characters/
+├── docs/
+├── .context/
+├── AGENTS.md
+├── CLAUDE.md
 ├── package.json
-├── tsconfig.json
-└── next.config.ts
+└── tsconfig.json
 ```
 
-## Commands
+## Build & Development
 
 ```bash
-npm run dev          # 개발 서버 (http://localhost:3000)
-npm run build        # 프로덕션 빌드
-npm run lint         # ESLint
-npx tsc --noEmit     # TypeScript 타입 체크
+npm run dev
+npx tsc --noEmit
+node --test src/lib/*.test.ts
+npm run build
 ```
+
+`npm run lint` currently points to `next lint`, but in this Next 16 setup it does not run correctly. Do not treat it as a required verification command until the script is fixed.
 
 ## Code Standards
 
 ### Do
 
-- **Immutable state**: `new Map(old)`, `[...arr, item]`, `{ ...obj, key: val }`
-- **`"use client"`** 모든 클라이언트 컴포넌트 파일 최상단
-- **Zustand selectors**: `useAppStore((s) => s.field)` — 전체 스토어 구독 금지
-- **Korean UI text**: 모든 사용자 대면 텍스트는 한국어
-- **파일당 400 LOC 이하**: 초과 시 slice/hook 분리
-- **lib/ 순수 함수**: side-effect 없음, store 의존 금지
-- **타입 안전**: strict TS, `as` 최소화, `unknown` → 타입 가드
+- Use selector subscriptions only: `useAppStore((s) => s.field)`
+- Keep Zustand updates immutable with `new Map()`, `new Set()`, spreads, etc.
+- Keep user-facing UI text in Korean
+- Keep `src/lib/` free of React and store dependencies
+- Treat `~/.config/prettyclaw/characters.json` as the source of truth for characters
+- Add new default characters to `config/characters.template.json`
+- For bug fixes, add a `node:test` reproduction test when practical
 
 ### Don't
 
-- ❌ state 직접 mutate (`state.field = val`)
-- ❌ `console.log` 커밋 (디버그용은 `console.warn` 사용)
-- ❌ 400 LOC 초과 단일 파일
-- ❌ URL/토큰 하드코딩 (환경변수 사용)
-- ❌ lib → store 의존 (lib는 순수)
-- ❌ `useAppStore()` 전체 구독 (selector 사용)
-- ❌ `any` 타입 (최소한 `unknown`)
+- Do not mutate Zustand state directly
+- Do not move character definitions back into a hard-coded source file
+- Do not import `useAppStore` from `lib`
+- Do not subscribe with `useAppStore()` without a selector
+- Do not use `any`
+- Do not hard-code URLs or tokens
 
-### Patterns
+## Known Gotchas
 
-```typescript
-// Zustand selector
-const status = useAppStore((s) => s.connectionStatus);
+- `/api/bootstrap-agents` does more than create missing agents. It also rewrites `IDENTITY.md`, `SOUL.md`, and `USER.md` for existing agent workspaces.
+- `loadCharacterConfig()` seeds `~/.config/prettyclaw/characters.json` from the template when the file does not exist.
+- `characters.json` is merged with the template by `id`. Partial overrides are fine, but changing `id` breaks fallback behavior.
+- `push-persona/route.ts` is deprecated. Bootstrap sync is the current persona update path.
+- `useAppStore.ts` is currently 763 LOC. Consider slice extraction before making it larger.
+- `gateway-client.ts` and `CharacterSprite.tsx` are also growing hotspots.
 
-// Immutable Map update
-const next = new Map(state.messages);
-next.set(key, [...(next.get(key) || []), newMsg]);
-set({ messages: next });
+## After Code Changes
 
-// Gateway RPC call
-const result = await gatewayClient.call("method.name", { param: value });
-```
-
-## Verification
-
-작업 완료 후 검증 순서:
+Default verification order:
 
 ```bash
-npx tsc --noEmit     # 1. 타입 체크
-npm run lint         # 2. 린트
-npm run build        # 3. 빌드
-npm run dev          # 4. 스모크 테스트 (수동)
+npx tsc --noEmit
+node --test src/lib/*.test.ts
+npm run build
 ```
+
+Add these checks when relevant:
+
+- UI changes: run `npm run dev` and do a manual smoke test
+- Gateway/session changes: verify actual `agent:<agentId>:<sessionKey>` routing
+- Character config changes: verify both `~/.config/prettyclaw/characters.json` and `~/.openclaw/workspace-<agentId>/SOUL.md`
 
 ## Environment
 
 ```bash
-# .env.local (커밋 금지)
+# .env.local (do not commit)
 NEXT_PUBLIC_GATEWAY_URL=ws://localhost:18789
 NEXT_PUBLIC_GATEWAY_TOKEN=your-token-here
 ```
 
-## Testing (TBD)
+Additional local files:
 
-계획: vitest + @testing-library/react + Playwright
+- `~/.config/prettyclaw/characters.json` — character source of truth
+- `~/.openclaw/workspace-<agentId>/` — per-agent workspace written by bootstrap
+
+## Testing
+
+The current test stack is lightweight `node:test`.
 
 ```bash
-# 설정 후:
-npm test             # vitest 단위/통합
-npm run test:e2e     # Playwright E2E
+node --test src/lib/*.test.ts
 ```
+
+- Current test files: `src/lib/agent-bootstrap.test.ts`, `src/lib/character-config.test.ts`
+- UI/E2E test frameworks are not installed yet
 
 ## Commit Conventions
 
-```
+```text
 <type>: <description>
 
-feat:     새 기능
-fix:      버그 수정
-refactor: 리팩터링
-test:     테스트 추가/수정
-chore:    빌드, 설정, 문서
-perf:     성능 개선
+feat:     new feature
+fix:      bug fix
+refactor: refactor
+test:     add/update tests
+chore:    build, config, docs
+perf:     performance improvement
 ```
 
 ## Multi-Agent Coordination
 
-- 태스크 목록: `.context/TASKS.md`
-- 조율 규칙: `.context/STEERING.md`
-- 태스크 할당: TASKS.md의 Priority/Phase 기반
-- 에이전트 간 파일 충돌: store slice 단위로 분리 할당
-- 완료 검증: 각 에이전트가 자체 `tsc + lint + build` 수행
+- Tasks: `.context/TASKS.md`
+- Coordination rules: `.context/STEERING.md`
+- Assign work by TASKS priority and phase
+- Avoid concurrent edits to the same file
+- Each agent should verify with `tsc + node:test + build`
