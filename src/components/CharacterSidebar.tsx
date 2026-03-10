@@ -3,15 +3,20 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useAppStore } from "@/stores/useAppStore";
+import { getConnectionIssueCopy, getConnectionStatusLabel } from "@/lib/gateway-connection";
 
 export function CharacterSidebar() {
   const characters = useAppStore((s) => s.characters);
   const activeCharacterId = useAppStore((s) => s.activeCharacterId);
   const selectCharacter = useAppStore((s) => s.selectCharacter);
   const connectionStatus = useAppStore((s) => s.connectionStatus);
+  const connectionIssue = useAppStore((s) => s.connectionIssue);
+  const pairingState = useAppStore((s) => s.pairingState);
   const toggleSettings = useAppStore((s) => s.toggleSettings);
   const streamStates = useAppStore((s) => s.streamStates);
   const activeSessionKeys = useAppStore((s) => s.activeSessionKeys);
+  const connectionCopy = getConnectionIssueCopy(connectionIssue);
+  const connectionLabel = getConnectionStatusLabel(connectionStatus, pairingState);
 
   return (
     <div className="flex flex-col h-full w-[200px] min-w-[200px]"
@@ -29,11 +34,14 @@ export function CharacterSidebar() {
             "bg-red-400"
           }`} />
           <span className="text-xs" style={{ color: "var(--color-text-dim)" }}>
-            {connectionStatus === "connected" ? "Connected" :
-             connectionStatus === "connecting" ? "Connecting..." :
-             "Disconnected"}
+            {connectionLabel}
           </span>
         </div>
+        {connectionCopy && (
+          <p className="mt-1 text-[11px] leading-relaxed" style={{ color: "rgba(255,255,255,0.52)" }}>
+            {connectionCopy.title}
+          </p>
+        )}
       </div>
 
       {/* Character list */}

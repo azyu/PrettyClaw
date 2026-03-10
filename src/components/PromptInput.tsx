@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useAppStore } from "@/stores/useAppStore";
+import { getConnectionIssueCopy } from "@/lib/gateway-connection";
 
 function useActiveSessionKey() {
   const activeCharacterId = useAppStore((s) => s.activeCharacterId);
@@ -21,6 +22,8 @@ export function PromptInput() {
   const abortMessage = useAppStore((s) => s.abortMessage);
   const streamStates = useAppStore((s) => s.streamStates);
   const connectionStatus = useAppStore((s) => s.connectionStatus);
+  const connectionIssue = useAppStore((s) => s.connectionIssue);
+  const pairingState = useAppStore((s) => s.pairingState);
   const activeCharacterId = useAppStore((s) => s.activeCharacterId);
   const characters = useAppStore((s) => s.characters);
   const toggleLog = useAppStore((s) => s.toggleLog);
@@ -29,6 +32,7 @@ export function PromptInput() {
   const activeChar = characters.find((c) => c.id === activeCharacterId);
   const isStreaming = sessionKey ? (streamStates.get(sessionKey)?.streaming ?? false) : false;
   const canSend = text.trim() && connectionStatus === "connected" && !isStreaming;
+  const connectionCopy = getConnectionIssueCopy(connectionIssue);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -86,11 +90,13 @@ export function PromptInput() {
           onChange={handleInput}
           onKeyDown={handleKeyDown}
           placeholder={
-            connectionStatus !== "connected"
-              ? "Connect to gateway first..."
+            pairingState === "required"
+              ? "기기 승인 후 다시 연결하세요..."
+              : connectionStatus !== "connected"
+              ? connectionCopy?.title || "Gateway에 먼저 연결하세요..."
               : activeChar
-              ? `Talk to ${activeChar.displayName}...`
-              : "Select a character..."
+              ? `${activeChar.displayName}에게 말을 걸어보세요...`
+              : "캐릭터를 선택하세요..."
           }
           disabled={connectionStatus !== "connected"}
           rows={1}

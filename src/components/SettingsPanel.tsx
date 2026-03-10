@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "@/stores/useAppStore";
+import { getConnectionIssueCopy, getConnectionStatusLabel } from "@/lib/gateway-connection";
 
 export function SettingsPanel() {
   const showSettings = useAppStore((s) => s.showSettings);
@@ -10,6 +11,8 @@ export function SettingsPanel() {
   const gatewaySettings = useAppStore((s) => s.gatewaySettings);
   const setGatewaySettings = useAppStore((s) => s.setGatewaySettings);
   const connectionStatus = useAppStore((s) => s.connectionStatus);
+  const connectionIssue = useAppStore((s) => s.connectionIssue);
+  const pairingState = useAppStore((s) => s.pairingState);
   const connect = useAppStore((s) => s.connect);
   const disconnect = useAppStore((s) => s.disconnect);
 
@@ -20,6 +23,9 @@ export function SettingsPanel() {
     setUrl(gatewaySettings.url);
     setToken(gatewaySettings.token);
   }, [gatewaySettings]);
+
+  const connectionCopy = getConnectionIssueCopy(connectionIssue);
+  const connectionLabel = getConnectionStatusLabel(connectionStatus, pairingState);
 
   const handleSave = () => {
     setGatewaySettings({ url, token });
@@ -128,8 +134,33 @@ export function SettingsPanel() {
 
                 {/* Connection status */}
                 <div className="pt-2 text-xs" style={{ color: "var(--color-text-dim)" }}>
-                  Status: {connectionStatus}
+                  상태: {connectionLabel}
                 </div>
+
+                {connectionCopy && (
+                  <div
+                    className="rounded-lg p-4 text-xs leading-relaxed"
+                    style={{
+                      background: "rgba(239,68,68,0.08)",
+                      border: "1px solid rgba(239,68,68,0.18)",
+                      color: "rgba(255,255,255,0.82)",
+                    }}
+                  >
+                    <p className="font-medium mb-2" style={{ color: "#fca5a5" }}>
+                      {connectionCopy.title}
+                    </p>
+                    <p>{connectionCopy.description}</p>
+                    {connectionCopy.commands.length > 0 && (
+                      <div className="mt-3 space-y-1">
+                        {connectionCopy.commands.map((command) => (
+                          <p key={command}>
+                            <code>{command}</code>
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Info */}
@@ -142,14 +173,14 @@ export function SettingsPanel() {
                 }}
               >
                 <p className="mb-2 font-medium" style={{ color: "var(--color-text)" }}>
-                  Gateway Control UI Mode
+                  Gateway Device Auth
                 </p>
                 <p>
-                  Connects directly to the OpenClaw Gateway using WebSocket.
-                  Requires <code>gateway.controlUi.allowInsecureAuth</code> in openclaw.json.
+                  브라우저 device identity로 OpenClaw Gateway에 직접 연결합니다.
+                  첫 연결 후 pairing이 필요하면 Gateway 호스트에서 승인해야 합니다.
                 </p>
                 <p className="mt-1">
-                  Characters: <code>~/.config/prettyclaw/characters.json</code>
+                  캐릭터 설정: <code>~/.config/prettyclaw/characters.json</code>
                 </p>
               </div>
             </div>

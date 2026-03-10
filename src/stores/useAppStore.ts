@@ -5,6 +5,8 @@ import type {
   ConnectionStatus,
   GatewaySettings,
   GatewayEvent,
+  GatewayConnectionIssue,
+  PairingState,
 } from "@/types";
 import { GatewayClient } from "@/lib/gateway-client";
 import { DEFAULT_CHARACTERS } from "@/lib/characters";
@@ -37,6 +39,8 @@ interface AppState {
   gatewaySettings: GatewaySettings;
   connectionStatus: ConnectionStatus;
   gatewayClient: GatewayClient | null;
+  connectionIssue: GatewayConnectionIssue | null;
+  pairingState: PairingState;
 
   // Characters
   characters: CharacterConfig[];
@@ -144,6 +148,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   connectionStatus: "disconnected",
   gatewayClient: null,
+  connectionIssue: null,
+  pairingState: "idle",
   characters: DEFAULT_CHARACTERS,
   activeCharacterId: DEFAULT_CHARACTERS[0]?.id ?? null,
   activeSessionKeys: new Map(),
@@ -180,7 +186,19 @@ export const useAppStore = create<AppState>((set, get) => ({
     const client = new GatewayClient(gatewaySettings);
 
     client.onConnection(async (connected) => {
-      set({ connectionStatus: connected ? "connected" : "disconnected" });
+      set((state) => ({
+        connectionStatus: connected
+          ? "connected"
+          : state.connectionStatus === "error"
+          ? "error"
+          : "disconnected",
+        ...(connected
+          ? {
+              connectionIssue: null,
+              pairingState: "approved" as const,
+            }
+          : {}),
+      }));
       if (connected) {
         // Push active character's persona to Gateway agent
         try {
@@ -206,14 +224,33 @@ export const useAppStore = create<AppState>((set, get) => ({
       handleGatewayEvent(event, get, set);
     });
 
-    set({ gatewayClient: client, connectionStatus: "connecting" });
+    client.onConnectionError((issue) => {
+      set({
+        connectionStatus: "error",
+        connectionIssue: issue,
+        pairingState: issue.code === "PAIRING_REQUIRED" ? "required" : "idle",
+      });
+    });
+
+    set({
+      gatewayClient: client,
+      connectionStatus: "connecting",
+      connectionIssue: null,
+      pairingState: "idle",
+    });
     client.connect();
   },
 
   disconnect: () => {
     const { gatewayClient } = get();
     if (gatewayClient) gatewayClient.disconnect();
-    set({ connectionStatus: "disconnected", gatewayClient: null, historyLoaded: new Set() });
+    set({
+      connectionStatus: "disconnected",
+      gatewayClient: null,
+      historyLoaded: new Set(),
+      connectionIssue: null,
+      pairingState: "idle",
+    });
   },
 
   selectCharacter: async (characterId) => {

@@ -46,6 +46,57 @@ export interface GatewaySettings {
   token: string;
 }
 
+export interface GatewayErrorDetails {
+  code?: string;
+  [key: string]: unknown;
+}
+
+export interface GatewayErrorPayload {
+  code?: string;
+  message: string;
+  details?: GatewayErrorDetails;
+}
+
+export interface GatewayConnectionIssue {
+  code: string | null;
+  message: string;
+  details?: GatewayErrorDetails;
+}
+
+export interface GatewayConnectAuthPayload {
+  deviceToken?: string;
+  role?: string;
+  scopes?: string[];
+}
+
+export interface GatewayConnectPayload {
+  auth?: GatewayConnectAuthPayload;
+  [key: string]: unknown;
+}
+
+export interface StoredDeviceIdentity {
+  version: 1;
+  deviceId: string;
+  publicKey: string;
+  privateKey: string;
+  createdAtMs: number;
+}
+
+export interface StoredDeviceToken {
+  token: string;
+  role: string;
+  scopes: string[];
+  updatedAtMs: number;
+}
+
+export interface StoredDeviceAuth {
+  version: 1;
+  deviceId: string;
+  tokens: Record<string, StoredDeviceToken>;
+}
+
+export type PairingState = "idle" | "required" | "approved";
+
 /** A single chat message */
 export interface ChatMessage {
   id: string;
@@ -69,7 +120,7 @@ export interface GatewayResponse {
   id: string;
   ok: boolean;
   payload?: unknown;
-  error?: { message: string };
+  error?: GatewayErrorPayload;
 }
 
 /** Gateway WS event envelope */
