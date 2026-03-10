@@ -42,6 +42,10 @@ Gateway는 `{ type: "req" | "res" | "event", ... }` envelope 사용. `GatewayCli
 
 고정 레이어 구조: `SceneLayer`(배경 + 스프라이트) → `DialogueBox`(스트리밍 텍스트) → `PromptInput`. `CharacterSidebar`로 캐릭터 전환. 오버레이: Settings, ChatLog, SessionHistory, DebugInfo.
 
+## Implementation Guides
+
+- [character-sprite-overlays.md](./character-sprite-overlays.md) — 스프라이트 눈/입 overlay 자산 규칙 및 `spriteMeta` 작성 방법
+
 ## File Map
 
 ```
@@ -62,14 +66,17 @@ src/
 │   ├── SettingsPanel.tsx     # Gateway 설정 (161 LOC)
 │   ├── SessionHistoryPanel.tsx # 세션 목록 (195 LOC)
 │   ├── SessionActions.tsx    # 세션 액션 버튼 (59 LOC)
-│   └── DebugInfo.tsx         # 디버그 정보 (30 LOC)
+│   ├── DebugInfo.tsx         # 디버그 정보 (30 LOC)
+│   └── CharacterSprite.tsx   # 눈/입 overlay 스프라이트 렌더링
 ├── stores/
 │   └── useAppStore.ts        # Zustand 단일 스토어 (708 LOC) ⚠️
 ├── lib/
 │   ├── gateway-client.ts     # WebSocket RPC 클라이언트 (305 LOC)
 │   └── characters.ts         # 기본 캐릭터 설정 (76 LOC)
-└── types/
-    └── index.ts              # 공유 타입 정의 (64 LOC)
+├── types/
+│   └── index.ts              # 공유 타입 정의 (64 LOC)
+└── public/
+    └── characters/parts/     # 눈/입 overlay 파츠 자산
 ```
 
 ## Open Questions
