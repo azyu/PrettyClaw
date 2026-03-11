@@ -11,6 +11,7 @@ import { SessionActions } from "@/components/SessionActions";
 import { SessionHistoryPanel } from "@/components/SessionHistoryPanel";
 import { DebugInfo } from "@/components/DebugInfo";
 import { TtsPlayer } from "@/components/TtsPlayer";
+import { resolveBackgroundFocusOffsetPx } from "@/lib/dialogue-layout";
 import { useAppStore } from "@/stores/useAppStore";
 
 export default function Home() {
@@ -18,10 +19,12 @@ export default function Home() {
   const bootstrapAgents = useAppStore((s) => s.bootstrapAgents);
   const connect = useAppStore((s) => s.connect);
   const connectionStatus = useAppStore((s) => s.connectionStatus);
+  const isDialogueCollapsed = useAppStore((s) => s.isDialogueCollapsed);
   const [readyToConnect, setReadyToConnect] = useState(false);
   const [isTallLayout, setIsTallLayout] = useState(false);
   const [isCenteredStageLayout, setIsCenteredStageLayout] = useState(false);
   const [dialogueDockHeight, setDialogueDockHeight] = useState(0);
+  const [lastExpandedDialogueDockHeight, setLastExpandedDialogueDockHeight] = useState(0);
   const initialized = useRef(false);
   const dialogueDockRef = useRef<HTMLDivElement>(null);
 
@@ -90,8 +93,19 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isDialogueCollapsed && dialogueDockHeight > 0) {
+      setLastExpandedDialogueDockHeight(dialogueDockHeight);
+    }
+  }, [dialogueDockHeight, isDialogueCollapsed]);
+
   const dialogueBottomPaddingPx = isTallLayout ? 40 : 24;
-  const backgroundFocusOffsetPx = dialogueDockHeight + dialogueBottomPaddingPx;
+  const backgroundFocusOffsetPx = resolveBackgroundFocusOffsetPx(
+    dialogueDockHeight,
+    lastExpandedDialogueDockHeight,
+    isDialogueCollapsed,
+    dialogueBottomPaddingPx,
+  );
 
   return (
     <div className="flex h-screen w-screen overflow-hidden">

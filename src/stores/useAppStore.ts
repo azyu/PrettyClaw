@@ -69,6 +69,7 @@ interface AppState {
   // UI
   showSettings: boolean;
   showLog: boolean;
+  isDialogueCollapsed: boolean;
   chatFontSizePx: number;
   ttsAutoplay: boolean;
   pendingTts: TtsPlaybackRequest | null;
@@ -91,6 +92,7 @@ interface AppState {
   abortMessage: () => void;
   toggleSettings: () => void;
   toggleLog: () => void;
+  toggleDialogueCollapsed: () => void;
   toggleSessionHistory: () => void;
   setCharacters: (characters: CharacterConfig[]) => void;
   loadCharacters: () => Promise<void>;
@@ -225,6 +227,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   showSessionHistory: false,
   showSettings: false,
   showLog: false,
+  isDialogueCollapsed: false,
   chatFontSizePx: loadChatFontSizePx(),
   ttsAutoplay: loadTtsAutoplay(),
   pendingTts: null,
@@ -470,6 +473,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   toggleSettings: () => set((s) => ({ showSettings: !s.showSettings })),
   toggleLog: () => set((s) => ({ showLog: !s.showLog })),
+  toggleDialogueCollapsed: () => set((s) => ({ isDialogueCollapsed: !s.isDialogueCollapsed })),
   toggleSessionHistory: () => set((s) => ({ showSessionHistory: !s.showSessionHistory })),
 
   setCharacters: (characters) => set({ characters }),
