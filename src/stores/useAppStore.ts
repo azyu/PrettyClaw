@@ -11,6 +11,7 @@ import type {
 } from "@/types";
 import { GatewayClient } from "@/lib/gateway-client";
 import { createTtsPlaybackRequest } from "@/lib/tts";
+import { normalizeHistoryMessageContent } from "@/lib/chat-history";
 import { v4 as uuidv4 } from "uuid";
 
 /** Per-character streaming state */
@@ -468,7 +469,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         .map((m) => ({
           id: uuidv4(),
           role: m.role as "user" | "assistant",
-          content: typeof m.content === "string" ? m.content : JSON.stringify(m.content),
+          content: normalizeHistoryMessageContent(m.content),
           timestamp: m.timestamp || Date.now(),
           characterId,
         }));
