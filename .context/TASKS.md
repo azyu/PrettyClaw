@@ -25,6 +25,10 @@
 - [ ] T15: 반응형 레이아웃 — 모바일 breakpoint, 사이드바 토글, 대화창 조정
 - [ ] T16: 접근성(a11y) — aria-labels, keyboard navigation, focus management
 - [ ] T17: zod validation — Gateway 응답, 캐릭터 설정, 환경변수 스키마 검증
+- [ ] T24: shadcn/ui overlay 표준화 — `SettingsPanel`, `ChatLog`, `SessionHistoryPanel`를 `Dialog`/`Sheet` 기반으로 통일
+- [ ] T25: shadcn form primitives 확장 — `Textarea`, 필요 시 `Label` 및 autosize 패턴 정리
+- [ ] T26: 앱 전반 action UI 통일 — 남은 버튼/입력/아이콘 액션을 공용 primitives와 `Lucide React`로 정리
+- [ ] T27: UI theme token 정리 — VN 커스텀 변수와 shadcn semantic token 매핑 구조 문서화
 
 ## Low
 
@@ -34,3 +38,4 @@
 - [ ] T21: 채팅 내보내기 — JSON/텍스트 형식 대화 저장
 - [ ] T22: 키보드 단축키 — 캐릭터 전환(1/2/3), 설정 토글, 로그 토글
 - [ ] T23: 로딩/스켈레톤 UI — 연결 중, 히스토리 로딩 상태 표시
+- [ ] T28: motion + shadcn 통합 패턴 정리 — `Framer Motion` 오버레이와 shadcn primitives 공존 규칙 정리

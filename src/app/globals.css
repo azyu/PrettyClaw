@@ -9,6 +9,52 @@
   --color-text-dim: #888;
   --color-dialogue-bg: rgba(10, 10, 30, 0.85);
   --color-sidebar-bg: rgba(15, 15, 35, 0.9);
+  --background: var(--color-bg-primary);
+  --foreground: var(--color-text);
+  --card: color-mix(in srgb, var(--color-bg-secondary) 92%, black 8%);
+  --card-foreground: var(--color-text);
+  --popover: var(--color-bg-secondary);
+  --popover-foreground: var(--color-text);
+  --primary: var(--color-accent);
+  --primary-foreground: #ffffff;
+  --secondary: rgba(122, 162, 255, 0.12);
+  --secondary-foreground: var(--color-text);
+  --muted: rgba(255, 255, 255, 0.06);
+  --muted-foreground: var(--color-text-dim);
+  --accent: rgba(122, 162, 255, 0.16);
+  --accent-foreground: #f3f7ff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(122, 162, 255, 0.18);
+  --input: rgba(122, 162, 255, 0.2);
+  --ring: rgba(122, 162, 255, 0.65);
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 * {
@@ -86,15 +132,4 @@ html, body {
 /* Focus styling */
 textarea:focus {
   outline: none;
-}
-
-/* Button hover effects */
-button {
-  transition: all 0.15s ease;
-}
-button:hover:not(:disabled) {
-  filter: brightness(1.1);
-}
-button:active:not(:disabled) {
-  transform: scale(0.97);
 }

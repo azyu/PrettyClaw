@@ -1,9 +1,11 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Markdown from "react-markdown";
 import { useAppStore } from "@/stores/useAppStore";
+import { Button } from "@/components/ui/button";
 
 export function ChatLog() {
   const showLog = useAppStore((s) => s.showLog);
@@ -54,21 +56,24 @@ export function ChatLog() {
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
                 <h2 className="text-sm font-bold" style={{ color: activeChar?.theme.nameColor || "var(--color-accent)" }}>
-                  Chat Log — {activeChar?.displayName || ""}
+                  대화 로그 — {activeChar?.displayName || ""}
                 </h2>
-                <button
+                <Button
                   onClick={toggleLog}
-                  className="text-gray-400 hover:text-white transition-colors text-lg"
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-label="대화 로그 닫기"
                 >
-                  &times;
-                </button>
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
 
               {/* Messages */}
               <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
                 {charMessages.length === 0 ? (
                   <p className="text-center text-sm py-8" style={{ color: "var(--color-text-dim)" }}>
-                    No messages yet.
+                    아직 대화가 없습니다.
                   </p>
                 ) : (
                   charMessages.map((msg) => (
@@ -77,7 +82,7 @@ export function ChatLog() {
                         <div className="flex justify-end">
                           <div className="max-w-[80%]">
                             <span className="text-xs block text-right mb-0.5" style={{ color: "var(--color-text-dim)" }}>
-                              You
+                              나
                             </span>
                             <div
                               className="px-3 py-2 rounded-xl rounded-br-sm text-sm"
@@ -113,7 +118,7 @@ export function ChatLog() {
 
               {/* Footer */}
               <div className="px-5 py-2 border-t border-white/10 text-xs text-center" style={{ color: "var(--color-text-dim)" }}>
-                {charMessages.length} messages
+                메시지 {charMessages.length}개
               </div>
             </div>
           </motion.div>

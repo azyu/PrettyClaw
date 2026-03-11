@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { Settings2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAppStore } from "@/stores/useAppStore";
 import { getConnectionIssueCopy, getConnectionStatusLabel } from "@/lib/gateway-connection";
+import { Button } from "@/components/ui/button";
 
 export function CharacterSidebar() {
   const characters = useAppStore((s) => s.characters);
@@ -119,17 +121,14 @@ export function CharacterSidebar() {
 
       {/* Settings button */}
       <div className="px-4 py-3 border-t border-white/10">
-        <button
+        <Button
           onClick={toggleSettings}
-          className="w-full text-xs py-2 px-3 rounded transition-colors"
-          style={{
-            background: "rgba(122,162,255,0.1)",
-            color: "var(--color-text-dim)",
-            border: "1px solid rgba(122,162,255,0.2)",
-          }}
+          variant="secondary"
+          className="w-full justify-center text-xs text-muted-foreground"
         >
-          Settings
-        </button>
+          <Settings2 className="h-3.5 w-3.5" />
+          설정
+        </Button>
       </div>
     </div>
   );

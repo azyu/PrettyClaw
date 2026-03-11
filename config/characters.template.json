@@ -11,6 +11,11 @@
       "accent": "#7aa2ff",
       "nameColor": "#a8c8ff"
     },
+    "tts": {
+      "provider": "typecast",
+      "enabled": true,
+      "voiceId": "tc_60e5426de8b95f1d3000d7b5"
+    },
     "spriteScale": 1,
     "spriteMeta": {
       "sourceWidth": 1536,

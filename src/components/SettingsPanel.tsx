@@ -1,9 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "@/stores/useAppStore";
 import { getConnectionIssueCopy, getConnectionStatusLabel } from "@/lib/gateway-connection";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 
 export function SettingsPanel() {
   const showSettings = useAppStore((s) => s.showSettings);
@@ -15,6 +19,8 @@ export function SettingsPanel() {
   const pairingState = useAppStore((s) => s.pairingState);
   const connect = useAppStore((s) => s.connect);
   const disconnect = useAppStore((s) => s.disconnect);
+  const ttsAutoplay = useAppStore((s) => s.ttsAutoplay);
+  const setTtsAutoplay = useAppStore((s) => s.setTtsAutoplay);
 
   const [url, setUrl] = useState(gatewaySettings.url);
   const [token, setToken] = useState(gatewaySettings.token);
@@ -26,10 +32,6 @@ export function SettingsPanel() {
 
   const connectionCopy = getConnectionIssueCopy(connectionIssue);
   const connectionLabel = getConnectionStatusLabel(connectionStatus, pairingState);
-
-  const handleSave = () => {
-    setGatewaySettings({ url, token });
-  };
 
   const handleConnect = () => {
     setGatewaySettings({ url, token });
@@ -69,14 +71,17 @@ export function SettingsPanel() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold" style={{ color: "var(--color-accent)" }}>
-                  Gateway Settings
+                  Gateway 설정
                 </h2>
-                <button
+                <Button
                   onClick={toggleSettings}
-                  className="text-gray-400 hover:text-white transition-colors"
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-label="설정 닫기"
                 >
-                  &times;
-                </button>
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
 
               <div className="space-y-4">
@@ -84,52 +89,50 @@ export function SettingsPanel() {
                   <label className="block text-xs mb-1.5" style={{ color: "var(--color-text-dim)" }}>
                     Gateway URL
                   </label>
-                  <input
+                  <Input
                     type="text"
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg text-sm outline-none"
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(122,162,255,0.2)",
-                      color: "var(--color-text)",
-                    }}
+                    className="border-border/80 bg-background/60"
                     placeholder="ws://localhost:18789"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs mb-1.5" style={{ color: "var(--color-text-dim)" }}>
-                    Token
+                    토큰
                   </label>
-                  <input
+                  <Input
                     type="password"
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg text-sm outline-none"
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      border: "1px solid rgba(122,162,255,0.2)",
-                      color: "var(--color-text)",
-                    }}
-                    placeholder="Gateway token"
+                    className="border-border/80 bg-background/60"
+                    placeholder="Gateway 토큰"
                   />
                 </div>
 
                 <div className="flex gap-2 pt-2">
-                  <button
+                  <Button
                     onClick={handleConnect}
-                    className="flex-1 py-2 rounded-lg text-sm font-medium transition-colors"
+                    variant={connectionStatus === "connected" ? "destructive" : "default"}
+                    className="flex-1"
                     style={{
-                      background: connectionStatus === "connected"
-                        ? "rgba(239,68,68,0.2)"
-                        : "rgba(122,162,255,0.2)",
-                      color: connectionStatus === "connected" ? "#ef4444" : "var(--color-accent)",
-                      border: `1px solid ${connectionStatus === "connected" ? "rgba(239,68,68,0.3)" : "rgba(122,162,255,0.3)"}`,
+                      background:
+                        connectionStatus === "connected"
+                          ? "rgba(239,68,68,0.18)"
+                          : undefined,
+                      color:
+                        connectionStatus === "connected"
+                          ? "#f87171"
+                          : undefined,
+                      border:
+                        connectionStatus === "connected"
+                          ? "1px solid rgba(239,68,68,0.3)"
+                          : undefined,
                     }}
                   >
-                    {connectionStatus === "connected" ? "Disconnect" : "Connect"}
-                  </button>
+                    {connectionStatus === "connected" ? "연결 해제" : "연결"}
+                  </Button>
                 </div>
 
                 {/* Connection status */}
@@ -161,6 +164,26 @@ export function SettingsPanel() {
                     )}
                   </div>
                 )}
+
+                <div
+                  className="rounded-lg p-4"
+                  style={{
+                    background: "rgba(122,162,255,0.05)",
+                    border: "1px solid rgba(122,162,255,0.1)",
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
+                        TTS 자동 재생
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--color-text-dim)" }}>
+                        캐릭터 응답이 완료되면 Typecast 음성을 자동으로 재생합니다.
+                      </p>
+                    </div>
+                    <Switch checked={ttsAutoplay} onCheckedChange={setTtsAutoplay} aria-label="TTS 자동 재생" />
+                  </div>
+                </div>
               </div>
 
               {/* Info */}

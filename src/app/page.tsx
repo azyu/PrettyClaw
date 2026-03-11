@@ -10,6 +10,7 @@ import { ChatLog } from "@/components/ChatLog";
 import { SessionActions } from "@/components/SessionActions";
 import { SessionHistoryPanel } from "@/components/SessionHistoryPanel";
 import { DebugInfo } from "@/components/DebugInfo";
+import { TtsPlayer } from "@/components/TtsPlayer";
 import { useAppStore } from "@/stores/useAppStore";
 
 export default function Home() {
@@ -76,6 +77,7 @@ export default function Home() {
       <ChatLog />
       <SessionHistoryPanel />
       <DebugInfo />
+      <TtsPlayer />
     </div>
   );
 }

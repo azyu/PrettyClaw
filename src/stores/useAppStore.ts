@@ -7,8 +7,10 @@ import type {
   GatewayEvent,
   GatewayConnectionIssue,
   PairingState,
+  TtsPlaybackRequest,
 } from "@/types";
 import { GatewayClient } from "@/lib/gateway-client";
+import { createTtsPlaybackRequest } from "@/lib/tts";
 import { v4 as uuidv4 } from "uuid";
 
 /** Per-character streaming state */
@@ -64,9 +66,13 @@ interface AppState {
   // UI
   showSettings: boolean;
   showLog: boolean;
+  ttsAutoplay: boolean;
+  pendingTts: TtsPlaybackRequest | null;
+  ttsStopToken: number;
 
   // Actions
   setGatewaySettings: (settings: GatewaySettings) => void;
+  setTtsAutoplay: (enabled: boolean) => void;
   connect: () => void;
   disconnect: () => void;
   selectCharacter: (characterId: string) => void;
@@ -88,6 +94,7 @@ interface AppState {
 }
 
 const LS_SESSION_PREFIX = "prettyclaw-session-";
+const LS_TTS_AUTOPLAY_KEY = "prettyclaw-tts-autoplay";
 
 function saveLastSession(characterId: string, sessionKey: string) {
   try { localStorage.setItem(`${LS_SESSION_PREFIX}${characterId}`, sessionKey); } catch {}
@@ -95,6 +102,22 @@ function saveLastSession(characterId: string, sessionKey: string) {
 
 function loadLastSession(characterId: string): string | null {
   try { return localStorage.getItem(`${LS_SESSION_PREFIX}${characterId}`); } catch { return null; }
+}
+
+function saveTtsAutoplay(enabled: boolean) {
+  try { localStorage.setItem(LS_TTS_AUTOPLAY_KEY, JSON.stringify(enabled)); } catch {}
+}
+
+function loadTtsAutoplay(): boolean {
+  try {
+    const raw = localStorage.getItem(LS_TTS_AUTOPLAY_KEY);
+    if (raw == null) {
+      return true;
+    }
+    return JSON.parse(raw) !== false;
+  } catch {
+    return true;
+  }
 }
 
 /** No-op: personas are now handled by dedicated Gateway agents with their own workspaces */
@@ -161,11 +184,22 @@ export const useAppStore = create<AppState>((set, get) => ({
   showSessionHistory: false,
   showSettings: false,
   showLog: false,
+  ttsAutoplay: loadTtsAutoplay(),
+  pendingTts: null,
+  ttsStopToken: 0,
 
   setGatewaySettings: (settings) => {
     set({ gatewaySettings: settings });
     const client = get().gatewayClient;
     if (client) client.updateSettings(settings);
+  },
+
+  setTtsAutoplay: (enabled) => {
+    saveTtsAutoplay(enabled);
+    set((state) => ({
+      ttsAutoplay: enabled,
+      ...(enabled ? {} : { ttsStopToken: state.ttsStopToken + 1 }),
+    }));
   },
 
   connect: () => {
@@ -243,20 +277,26 @@ export const useAppStore = create<AppState>((set, get) => ({
   disconnect: () => {
     const { gatewayClient } = get();
     if (gatewayClient) gatewayClient.disconnect();
-    set({
+    set((state) => ({
       connectionStatus: "disconnected",
       gatewayClient: null,
       historyLoaded: new Set(),
       connectionIssue: null,
       pairingState: "idle",
-    });
+      pendingTts: null,
+      ttsStopToken: state.ttsStopToken + 1,
+    }));
   },
 
   selectCharacter: async (characterId) => {
     const prev = get().activeCharacterId;
     if (prev === characterId) return;
 
-    set({ activeCharacterId: characterId });
+    set((state) => ({
+      activeCharacterId: characterId,
+      pendingTts: null,
+      ttsStopToken: state.ttsStopToken + 1,
+    }));
 
     if (get().connectionStatus === "connected") {
       try {
@@ -294,10 +334,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     const charMessages = new Map(messages);
     const existing = charMessages.get(sessionKey) || [];
     charMessages.set(sessionKey, [...existing, userMsg]);
-    set({
+    set((state) => ({
       messages: charMessages,
       streamStates: setStream(streamStates, sessionKey, { streaming: true, text: "" }),
-    });
+      pendingTts: null,
+      ttsStopToken: state.ttsStopToken + 1,
+    }));
 
     try {
       const gwKey = toGatewaySessionKey(get(), activeCharacterId, sessionKey);
@@ -334,7 +376,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       charMessages.set(sessionKey, [...existing, assistantMsg]);
       set({ messages: charMessages });
     }
-    set({ streamStates: setStream(get().streamStates, sessionKey, { streaming: false, text: "" }) });
+    set((state) => ({
+      streamStates: setStream(get().streamStates, sessionKey, { streaming: false, text: "" }),
+      pendingTts: null,
+      ttsStopToken: state.ttsStopToken + 1,
+    }));
   },
 
   toggleSettings: () => set((s) => ({ showSettings: !s.showSettings })),
@@ -475,7 +521,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     const keys = new Map(get().activeSessionKeys);
     keys.set(activeCharacterId, newKey);
     saveLastSession(activeCharacterId, newKey);
-    set({ activeSessionKeys: keys });
+    set((state) => ({
+      activeSessionKeys: keys,
+      pendingTts: null,
+      ttsStopToken: state.ttsStopToken + 1,
+    }));
 
     // Ensure the new session exists on Gateway
     try {
@@ -532,7 +582,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     const keys = new Map(get().activeSessionKeys);
     keys.set(activeCharacterId, rawKey);
     saveLastSession(activeCharacterId, rawKey);
-    set({ activeSessionKeys: keys, showSessionHistory: false });
+    set((state) => ({
+      activeSessionKeys: keys,
+      showSessionHistory: false,
+      pendingTts: null,
+      ttsStopToken: state.ttsStopToken + 1,
+    }));
 
     // Load history for this session
     await get().loadHistory(rawKey, activeCharacterId);
@@ -561,7 +616,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     newLoaded.delete(rawKey);
     const newStreams = new Map(streamStates);
     newStreams.delete(rawKey);
-    set({ messages: newMessages, historyLoaded: newLoaded, streamStates: newStreams });
+    set((state) => ({
+      messages: newMessages,
+      historyLoaded: newLoaded,
+      streamStates: newStreams,
+      pendingTts: null,
+      ttsStopToken: state.ttsStopToken + 1,
+    }));
 
     // If the deleted session was active, switch to base session
     const currentKey = getActiveSessionKey(get(), activeCharacterId);
@@ -671,7 +732,8 @@ function handleChatEvent(
     }
 
     if (finalText) {
-      const { messages } = get();
+      const { messages, characters, ttsAutoplay } = get();
+      const character = characters.find((item) => item.id === charId);
       const assistantMsg: ChatMessage = {
         id: uuidv4(),
         role: "assistant",
@@ -679,12 +741,14 @@ function handleChatEvent(
         timestamp: Date.now(),
         characterId: charId,
       };
+      const pendingTts = createTtsPlaybackRequest(assistantMsg.id, character, finalText, ttsAutoplay);
       const charMessages = new Map(messages);
       const existing = charMessages.get(sessionKey) || [];
       charMessages.set(sessionKey, [...existing, assistantMsg]);
       set({
         messages: charMessages,
         streamStates: setStream(get().streamStates, sessionKey, EMPTY_STREAM),
+        pendingTts,
       });
     } else {
       set({ streamStates: setStream(get().streamStates, sessionKey, EMPTY_STREAM) });

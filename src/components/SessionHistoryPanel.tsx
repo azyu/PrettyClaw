@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "@/stores/useAppStore";
+import { Button } from "@/components/ui/button";
 
 function formatTime(ts?: number) {
   if (!ts) return "";
@@ -10,10 +12,10 @@ function formatTime(ts?: number) {
   const now = new Date();
   const diff = now.getTime() - d.getTime();
 
-  if (diff < 60_000) return "just now";
-  if (diff < 3600_000) return `${Math.floor(diff / 60_000)}m ago`;
-  if (diff < 86400_000) return `${Math.floor(diff / 3600_000)}h ago`;
-  if (diff < 604800_000) return `${Math.floor(diff / 86400_000)}d ago`;
+  if (diff < 60_000) return "방금 전";
+  if (diff < 3600_000) return `${Math.floor(diff / 60_000)}분 전`;
+  if (diff < 86400_000) return `${Math.floor(diff / 3600_000)}시간 전`;
+  if (diff < 604800_000) return `${Math.floor(diff / 86400_000)}일 전`;
   return d.toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
 }
 
@@ -84,21 +86,24 @@ export function SessionHistoryPanel() {
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
                 <h2 className="text-sm font-bold" style={{ color: activeChar?.theme.nameColor || "var(--color-accent)" }}>
-                  Sessions — {activeChar?.displayName || ""}
+                  세션 — {activeChar?.displayName || ""}
                 </h2>
-                <button
+                <Button
                   onClick={toggleSessionHistory}
-                  className="text-gray-400 hover:text-white transition-colors text-lg"
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-label="세션 패널 닫기"
                 >
-                  &times;
-                </button>
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
 
               {/* Session list */}
               <div className="flex-1 overflow-y-auto">
                 {characterSessions.length === 0 ? (
                   <p className="text-center text-sm py-8" style={{ color: "var(--color-text-dim)" }}>
-                    No sessions found.
+                    세션이 없습니다.
                   </p>
                 ) : (
                   characterSessions.map((session) => {
@@ -128,7 +133,7 @@ export function SessionHistoryPanel() {
                                   color: activeChar?.theme.accent,
                                 }}
                               >
-                                active
+                                현재
                               </span>
                             )}
                           </div>
@@ -138,7 +143,7 @@ export function SessionHistoryPanel() {
                             </span>
                             {session.totalTokens ? (
                               <span className="text-[11px]" style={{ color: "var(--color-text-dim)" }}>
-                                {formatTokens(session.totalTokens)} tokens
+                                {formatTokens(session.totalTokens)} 토큰
                               </span>
                             ) : null}
                             {session.model ? (
@@ -152,29 +157,23 @@ export function SessionHistoryPanel() {
                         {/* Actions */}
                         <div className="flex items-center gap-1.5 shrink-0">
                           {!isCurrent && (
-                            <button
+                            <Button
                               onClick={() => handleSwitch(session.key)}
-                              className="px-2.5 py-1 rounded text-[11px] font-medium transition-colors"
-                              style={{
-                                background: "rgba(122,162,255,0.15)",
-                                color: "var(--color-accent)",
-                                border: "1px solid rgba(122,162,255,0.2)",
-                              }}
+                              variant="secondary"
+                              size="sm"
+                              className="h-7 text-[11px]"
                             >
-                              Resume
-                            </button>
+                              이어가기
+                            </Button>
                           )}
-                          <button
+                          <Button
                             onClick={() => handleDelete(session.key)}
-                            className="px-2.5 py-1 rounded text-[11px] font-medium transition-colors"
-                            style={{
-                              background: confirmDelete === session.key ? "rgba(239,68,68,0.3)" : "rgba(239,68,68,0.1)",
-                              color: "#ef4444",
-                              border: `1px solid ${confirmDelete === session.key ? "rgba(239,68,68,0.5)" : "rgba(239,68,68,0.15)"}`,
-                            }}
+                            variant="destructive"
+                            size="sm"
+                            className="h-7 bg-destructive/15 text-destructive hover:bg-destructive/25"
                           >
-                            {confirmDelete === session.key ? "Confirm?" : "Delete"}
-                          </button>
+                            {confirmDelete === session.key ? "정말 삭제?" : "삭제"}
+                          </Button>
                         </div>
                       </div>
                     );
@@ -184,7 +183,7 @@ export function SessionHistoryPanel() {
 
               {/* Footer */}
               <div className="px-5 py-2 border-t border-white/10 text-xs text-center" style={{ color: "var(--color-text-dim)" }}>
-                {characterSessions.length} session{characterSessions.length !== 1 ? "s" : ""}
+                세션 {characterSessions.length}개
               </div>
             </div>
           </motion.div>

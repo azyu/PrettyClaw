@@ -32,6 +32,12 @@ export function mergeCharacterConfig(character: CharacterConfig, templateCharact
       ...fallback.theme,
       ...character.theme,
     },
+    tts: character.tts
+      ? {
+          ...fallback.tts,
+          ...character.tts,
+        }
+      : fallback.tts,
     spriteMeta: character.spriteMeta
       ? {
           ...fallback.spriteMeta,

@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { ScrollText, SendHorizontal, Square } from "lucide-react";
 import { useAppStore } from "@/stores/useAppStore";
 import { getConnectionIssueCopy } from "@/lib/gateway-connection";
+import { Button } from "@/components/ui/button";
 
 function useActiveSessionKey() {
   const activeCharacterId = useAppStore((s) => s.activeCharacterId);
@@ -70,19 +72,16 @@ export function PromptInput() {
           borderTop: "1px solid rgba(122,162,255,0.08)",
         }}
       >
-        <button
+        <Button
           onClick={toggleLog}
-          className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-all"
-          style={{ background: "rgba(122,162,255,0.08)", color: "var(--color-text-dim)" }}
-          title="Chat log"
+          variant="ghost"
+          size="icon"
+          className="shrink-0 rounded-lg bg-secondary/70 text-muted-foreground"
+          title="채팅 로그"
+          aria-label="채팅 로그"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="16" y1="13" x2="8" y2="13" />
-            <line x1="16" y1="17" x2="8" y2="17" />
-          </svg>
-        </button>
+          <ScrollText className="h-4 w-4" />
+        </Button>
 
         <textarea
           ref={inputRef}
@@ -105,32 +104,31 @@ export function PromptInput() {
         />
 
         {isStreaming ? (
-          <button
+          <Button
             onClick={abortMessage}
-            className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-all"
-            style={{ background: "rgba(239,68,68,0.2)", color: "#ef4444", cursor: "pointer" }}
-            title="Stop"
+            variant="destructive"
+            size="icon"
+            className="shrink-0 rounded-lg bg-destructive/20 text-destructive hover:bg-destructive/30"
+            title="중단"
+            aria-label="중단"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <rect x="4" y="4" width="16" height="16" rx="2" />
-            </svg>
-          </button>
+            <Square className="h-3.5 w-3.5 fill-current" />
+          </Button>
         ) : (
-          <button
+          <Button
             onClick={handleSubmit}
             disabled={!canSend}
-            className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-all"
+            size="icon"
+            className="shrink-0 rounded-lg"
             style={{
-              background: canSend ? activeChar?.theme.accent || "var(--color-accent)" : "rgba(122,162,255,0.1)",
-              color: canSend ? "#fff" : "var(--color-text-dim)",
-              cursor: canSend ? "pointer" : "not-allowed",
+              background: canSend ? activeChar?.theme.accent || "var(--color-accent)" : undefined,
+              color: canSend ? "#fff" : undefined,
             }}
+            title="전송"
+            aria-label="전송"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" />
-            </svg>
-          </button>
+            <SendHorizontal className="h-4 w-4" />
+          </Button>
         )}
       </div>
     </div>

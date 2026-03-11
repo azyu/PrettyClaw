@@ -18,6 +18,11 @@ const templateCharacters = [
       accent: "#7aa2ff",
       nameColor: "#a8c8ff",
     },
+    tts: {
+      provider: "typecast",
+      enabled: true,
+      voiceId: "voice-template",
+    },
     personaPrompt: "템플릿 프롬프트",
   },
 ];
@@ -46,6 +51,11 @@ test("loadCharacterConfig loads ~/.config/prettyclaw/characters.json over the te
             accent: "#ffffff",
             nameColor: "#000000",
           },
+          tts: {
+            provider: "typecast",
+            enabled: false,
+            voiceId: "voice-config",
+          },
           personaPrompt: "설정 프롬프트",
         },
       ],
@@ -60,6 +70,9 @@ test("loadCharacterConfig loads ~/.config/prettyclaw/characters.json over the te
   assert.equal(result.source, "config");
   assert.equal(result.characters[0]?.displayName, "설정 유키");
   assert.equal(result.characters[0]?.personaPrompt, "설정 프롬프트");
+  assert.equal(result.characters[0]?.tts?.provider, "typecast");
+  assert.equal(result.characters[0]?.tts?.enabled, false);
+  assert.equal(result.characters[0]?.tts?.voiceId, "voice-config");
 });
 
 test("loadCharacterConfig seeds ~/.config/prettyclaw/characters.json from the template when missing", async () => {

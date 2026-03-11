@@ -18,6 +18,18 @@ export interface CharacterSpriteMeta {
   mouth?: SpriteOverlayPart;
 }
 
+export interface CharacterTtsConfig {
+  provider: "typecast";
+  enabled: boolean;
+  voiceId: string;
+}
+
+export interface TtsPlaybackRequest {
+  id: string;
+  characterId: string;
+  text: string;
+}
+
 export interface CharacterConfig {
   id: string;
   displayName: string;
@@ -37,6 +49,8 @@ export interface CharacterConfig {
   spriteMeta?: CharacterSpriteMeta;
   /** Short description shown in sidebar */
   description?: string;
+  /** Optional text-to-speech voice configuration */
+  tts?: CharacterTtsConfig;
   personaPrompt: string;
 }
 
