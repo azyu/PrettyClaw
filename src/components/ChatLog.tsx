@@ -1,9 +1,11 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useRef, useEffect } from "react";
 import { X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import Markdown from "react-markdown";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { ChatMarkdown } from "@/components/ChatMarkdown";
+import { getChatFontSizeStyle } from "@/lib/chat-font-size";
 import { useAppStore } from "@/stores/useAppStore";
 import { Button } from "@/components/ui/button";
 
@@ -14,13 +16,17 @@ export function ChatLog() {
   const activeCharacterId = useAppStore((s) => s.activeCharacterId);
   const messages = useAppStore((s) => s.messages);
   const activeSessionKeys = useAppStore((s) => s.activeSessionKeys);
+  const chatFontSizePx = useAppStore((s) => s.chatFontSizePx);
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useReducedMotion();
   const activeChar = characters.find((c) => c.id === activeCharacterId);
   const sessionKey = activeCharacterId
     ? (activeSessionKeys.get(activeCharacterId) || activeChar?.sessionKey || null)
     : null;
   const charMessages = sessionKey ? messages.get(sessionKey) || [] : [];
+  const dialogTitleId = "chat-log-title";
+  const chatTextStyle = getChatFontSizeStyle(chatFontSizePx) as CSSProperties;
 
   useEffect(() => {
     if (showLog && scrollRef.current) {
@@ -35,19 +41,24 @@ export function ChatLog() {
           <motion.div
             className="fixed inset-0 z-40"
             style={{ background: "rgba(0,0,0,0.6)" }}
-            initial={{ opacity: 0 }}
+            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.18 }}
             onClick={toggleLog}
           />
           <motion.div
             className="fixed inset-x-0 top-0 bottom-0 z-50 flex items-center justify-center p-8"
-            initial={{ opacity: 0 }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={dialogTitleId}
+            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.18 }}
           >
             <div
-              className="w-full max-w-2xl max-h-[80vh] flex flex-col rounded-xl overflow-hidden"
+              className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl overscroll-contain"
               style={{
                 background: "var(--color-bg-secondary)",
                 border: "1px solid rgba(122,162,255,0.2)",
@@ -55,7 +66,11 @@ export function ChatLog() {
             >
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
-                <h2 className="text-sm font-bold" style={{ color: activeChar?.theme.nameColor || "var(--color-accent)" }}>
+                <h2
+                  id={dialogTitleId}
+                  className="text-sm font-bold"
+                  style={{ color: activeChar?.theme.nameColor || "var(--color-accent)" }}
+                >
                   대화 로그 — {activeChar?.displayName || ""}
                 </h2>
                 <Button
@@ -65,14 +80,14 @@ export function ChatLog() {
                   className="text-muted-foreground hover:text-foreground"
                   aria-label="대화 로그 닫기"
                 >
-                  <X className="h-4 w-4" />
+                  <X aria-hidden="true" className="h-4 w-4" />
                 </Button>
               </div>
 
               {/* Messages */}
-              <div ref={scrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+              <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 space-y-3">
                 {charMessages.length === 0 ? (
-                  <p className="text-center text-sm py-8" style={{ color: "var(--color-text-dim)" }}>
+                  <p className="py-8 text-center" style={{ ...chatTextStyle, color: "var(--color-text-dim)" }}>
                     아직 대화가 없습니다.
                   </p>
                 ) : (
@@ -85,8 +100,8 @@ export function ChatLog() {
                               나
                             </span>
                             <div
-                              className="px-3 py-2 rounded-xl rounded-br-sm text-sm"
-                              style={{ background: "rgba(122,162,255,0.12)", color: "var(--color-text)" }}
+                              className="rounded-xl rounded-br-sm px-3 py-2"
+                              style={{ ...chatTextStyle, background: "rgba(122,162,255,0.12)", color: "var(--color-text)" }}
                             >
                               {msg.content}
                             </div>
@@ -104,10 +119,10 @@ export function ChatLog() {
                             {activeChar?.displayName}
                           </span>
                           <div
-                            className="px-3 py-2 rounded-xl rounded-tl-sm text-sm leading-relaxed mt-0.5 prose prose-invert prose-sm max-w-none"
-                            style={{ background: "rgba(255,255,255,0.04)", color: "var(--color-text)" }}
+                            className="mt-0.5 rounded-xl rounded-tl-sm px-3 py-2"
+                            style={{ ...chatTextStyle, background: "rgba(255,255,255,0.04)", color: "var(--color-text)" }}
                           >
-                            <Markdown>{msg.content}</Markdown>
+                            <ChatMarkdown content={msg.content} fontSizePx={chatFontSizePx} />
                           </div>
                         </div>
                       )}

@@ -69,6 +69,8 @@ html, body {
   background: var(--color-bg-primary);
   color: var(--color-text);
   font-family: 'Segoe UI', 'Noto Sans JP', sans-serif;
+  color-scheme: dark;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Custom scrollbar */
@@ -127,9 +129,4 @@ html, body {
 ::selection {
   background: rgba(122, 162, 255, 0.3);
   color: #fff;
-}
-
-/* Focus styling */
-textarea:focus {
-  outline: none;
 }

@@ -8,7 +8,7 @@ const typecastCharacter: CharacterConfig = {
   displayName: "유키",
   agentId: "prettyclaw-yuki",
   sessionKey: "prettyclaw-yuki",
-  avatar: "/characters/yuki-avatar.svg",
+  avatar: "/characters/yuki-avatar.png",
   sprite: "/characters/yuki-sprite.png",
   background: "/backgrounds/room-night.svg",
   theme: {

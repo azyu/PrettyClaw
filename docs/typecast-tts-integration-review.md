@@ -33,7 +33,7 @@
 
 주의:
 
-- `~/.config/prettyclaw/characters.json`이 실제 소스 오브 트루스다.
+- 저장소 기본 캐릭터는 `config/characters.template.json`에 있고, `~/.config/prettyclaw/characters.json`이 있으면 그 파일이 실제 캐릭터 목록이 된다.
 - 기존 flat TTS 스키마(`voiceId`, `model`을 `tts` 루트에 두는 형태)는 자동 호환하지 않는다.
 - 로컬 설정 파일도 위 nested 스키마로 직접 바꿔야 한다.
 
@@ -135,7 +135,7 @@ PrettyClaw에 유리한 점:
 
 ### 2. 캐릭터별 음성 설정은 character config에 둔다
 
-현재 캐릭터 소스 오브 트루스는 `~/.config/prettyclaw/characters.json`이고,
+현재 저장소 기본 캐릭터는 `config/characters.template.json`이고, 로컬 `~/.config/prettyclaw/characters.json`이 있으면 그 파일을 그대로 읽는다.
 기본값은 `config/characters.template.json`에서 seed된다.
 
 따라서 음성 선택 정보는 `CharacterConfig`에 넣는 편이 맞다.
@@ -162,9 +162,9 @@ tts?: {
 
 이 구조의 장점:
 
-- 유키, 사쿠라, 린 각각 다른 voice를 가질 수 있다.
+- 저장소 기본 캐릭터와 로컬 `characters.json` 오버라이드 캐릭터마다 다른 voice를 가질 수 있다.
 - 사용자 오버라이드 파일에서도 캐릭터별 음성을 쉽게 수정할 수 있다.
-- 프로젝트 규칙인 "캐릭터 정의는 characters.json이 소스 오브 트루스"를 지킨다.
+- 저장소 기본값과 로컬 캐릭터 목록을 분리해도 캐릭터별 설정 변경 지점을 명확하게 유지할 수 있다.
 
 ### 3. 재생 제어는 클라이언트 전용 얇은 계층으로 둔다
 

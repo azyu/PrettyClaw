@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { loadCharacterConfig } from "./character-config.ts";
@@ -11,7 +12,7 @@ const templateCharacters = [
     displayName: "유키",
     agentId: "prettyclaw-yuki",
     sessionKey: "prettyclaw-yuki",
-    avatar: "/characters/yuki-avatar.svg",
+    avatar: "/characters/yuki-avatar.png",
     sprite: "/characters/yuki-sprite.png",
     background: "/backgrounds/room-night.svg",
     theme: {
@@ -31,23 +32,9 @@ const templateCharacters = [
     },
     personaPrompt: "템플릿 프롬프트",
   },
-  {
-    id: "sana",
-    displayName: "사나",
-    agentId: "prettyclaw-sana",
-    sessionKey: "prettyclaw-sana",
-    avatar: "/characters/sana-avatar.png",
-    sprite: "/characters/sana-sprite.png",
-    background: "/backgrounds/sana-room.png",
-    theme: {
-      accent: "#d79a63",
-      nameColor: "#f2c896",
-    },
-    personaPrompt: "사나 프롬프트",
-  },
 ];
 
-test("loadCharacterConfig loads ~/.config/prettyclaw/characters.json over the template", async () => {
+test("loadCharacterConfig returns only ~/.config/prettyclaw/characters.json when present", async () => {
   const root = await mkdtemp(join(tmpdir(), "prettyclaw-config-"));
   const configDir = join(root, ".config", "prettyclaw");
   const configFile = join(configDir, "characters.json");
@@ -85,6 +72,20 @@ test("loadCharacterConfig loads ~/.config/prettyclaw/characters.json over the te
           },
           personaPrompt: "설정 프롬프트",
         },
+        {
+          id: "sana",
+          displayName: "사나",
+          agentId: "prettyclaw-sana",
+          sessionKey: "prettyclaw-sana",
+          avatar: "/characters/sana-avatar.png",
+          sprite: "/characters/sana-sprite.png",
+          background: "/backgrounds/sana-room.png",
+          theme: {
+            accent: "#d79a63",
+            nameColor: "#f2c896",
+          },
+          personaPrompt: "사나 프롬프트",
+        },
       ],
       null,
       2,
@@ -95,6 +96,7 @@ test("loadCharacterConfig loads ~/.config/prettyclaw/characters.json over the te
   const result = await loadCharacterConfig({ configDir, configFile, templateFile });
 
   assert.equal(result.source, "config");
+  assert.equal(result.characters.length, 2);
   assert.equal(result.characters[0]?.displayName, "설정 유키");
   assert.equal(result.characters[0]?.personaPrompt, "설정 프롬프트");
   assert.equal(result.characters[0]?.tts?.provider, "edge");
@@ -107,7 +109,7 @@ test("loadCharacterConfig loads ~/.config/prettyclaw/characters.json over the te
   assert.equal(result.characters[1]?.displayName, "사나");
 });
 
-test("loadCharacterConfig seeds ~/.config/prettyclaw/characters.json from the template when missing", async () => {
+test("loadCharacterConfig returns repository defaults without seeding ~/.config/prettyclaw/characters.json", async () => {
   const root = await mkdtemp(join(tmpdir(), "prettyclaw-template-"));
   const configDir = join(root, ".config", "prettyclaw");
   const configFile = join(configDir, "characters.json");
@@ -116,9 +118,9 @@ test("loadCharacterConfig seeds ~/.config/prettyclaw/characters.json from the te
   await writeFile(templateFile, JSON.stringify(templateCharacters, null, 2), "utf-8");
 
   const result = await loadCharacterConfig({ configDir, configFile, templateFile });
-  const seeded = JSON.parse(await readFile(configFile, "utf-8")) as Array<{ displayName: string }>;
 
   assert.equal(result.source, "template");
+  assert.equal(result.characters.length, 1);
   assert.equal(result.characters[0]?.displayName, "유키");
-  assert.equal(seeded[0]?.displayName, "유키");
+  assert.equal(existsSync(configFile), false);
 });

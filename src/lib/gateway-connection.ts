@@ -3,7 +3,7 @@ import type { ConnectionStatus, GatewayConnectionIssue, PairingState } from "@/t
 export function getConnectionStatusLabel(status: ConnectionStatus, pairingState: PairingState) {
   if (pairingState === "required") return "승인 필요";
   if (status === "connected") return "연결됨";
-  if (status === "connecting") return "연결 중...";
+  if (status === "connecting") return "연결 중…";
   if (status === "error") return "연결 오류";
   return "연결 안 됨";
 }

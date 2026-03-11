@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useAppStore } from "@/stores/useAppStore";
 import { Button } from "@/components/ui/button";
 
@@ -37,10 +37,12 @@ export function SessionHistoryPanel() {
 
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
+  const prefersReducedMotion = useReducedMotion();
   const activeChar = characters.find((c) => c.id === activeCharacterId);
   const currentSessionKey = activeCharacterId
     ? (activeSessionKeys.get(activeCharacterId) || activeChar?.sessionKey || "")
     : "";
+  const dialogTitleId = "session-history-title";
 
   const handleSwitch = (sessionKey: string) => {
     switchToSession(sessionKey);
@@ -64,20 +66,24 @@ export function SessionHistoryPanel() {
           <motion.div
             className="fixed inset-0 z-40"
             style={{ background: "rgba(0,0,0,0.6)" }}
-            initial={{ opacity: 0 }}
+            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={prefersReducedMotion ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.18 }}
             onClick={toggleSessionHistory}
           />
           <motion.div
             className="fixed inset-x-0 top-0 bottom-0 z-50 flex items-center justify-center p-8"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={dialogTitleId}
+            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, scale: 0.95 }}
+            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1 }}
+            exit={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, scale: 0.95 }}
+            transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
           >
             <div
-              className="w-full max-w-lg max-h-[70vh] flex flex-col rounded-xl overflow-hidden"
+              className="flex max-h-[70vh] w-full max-w-lg flex-col overflow-hidden rounded-xl overscroll-contain"
               style={{
                 background: "var(--color-bg-secondary)",
                 border: "1px solid rgba(122,162,255,0.2)",
@@ -85,7 +91,11 @@ export function SessionHistoryPanel() {
             >
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
-                <h2 className="text-sm font-bold" style={{ color: activeChar?.theme.nameColor || "var(--color-accent)" }}>
+                <h2
+                  id={dialogTitleId}
+                  className="text-sm font-bold"
+                  style={{ color: activeChar?.theme.nameColor || "var(--color-accent)" }}
+                >
                   세션 — {activeChar?.displayName || ""}
                 </h2>
                 <Button
@@ -95,12 +105,12 @@ export function SessionHistoryPanel() {
                   className="text-muted-foreground hover:text-foreground"
                   aria-label="세션 패널 닫기"
                 >
-                  <X className="h-4 w-4" />
+                  <X aria-hidden="true" className="h-4 w-4" />
                 </Button>
               </div>
 
               {/* Session list */}
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto overscroll-contain">
                 {characterSessions.length === 0 ? (
                   <p className="text-center text-sm py-8" style={{ color: "var(--color-text-dim)" }}>
                     세션이 없습니다.
@@ -161,16 +171,16 @@ export function SessionHistoryPanel() {
                               onClick={() => handleSwitch(session.key)}
                               variant="secondary"
                               size="sm"
-                              className="h-7 text-[11px]"
+                              className="text-xs"
                             >
                               이어가기
                             </Button>
                           )}
                           <Button
                             onClick={() => handleDelete(session.key)}
-                            variant="destructive"
+                            variant={confirmDelete === session.key ? "destructive" : "destructiveSubtle"}
                             size="sm"
-                            className="h-7 bg-destructive/15 text-destructive hover:bg-destructive/25"
+                            className="text-xs"
                           >
                             {confirmDelete === session.key ? "정말 삭제?" : "삭제"}
                           </Button>

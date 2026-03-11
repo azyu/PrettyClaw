@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir } from "fs/promises";
+import { readFile } from "fs/promises";
 import { existsSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
@@ -19,60 +19,11 @@ async function readCharacterConfigFile(filePath: string) {
   return JSON.parse(raw) as CharacterConfig[];
 }
 
-function mergeTtsConfig(character: CharacterConfig, fallback: CharacterConfig | undefined) {
-  if (!character.tts) {
-    return fallback?.tts;
-  }
-
-  return {
-    ...fallback?.tts,
-    ...character.tts,
-    typecast: character.tts.typecast
-      ? {
-          ...fallback?.tts?.typecast,
-          ...character.tts.typecast,
-        }
-      : fallback?.tts?.typecast,
-    edge: character.tts.edge
-      ? {
-          ...fallback?.tts?.edge,
-          ...character.tts.edge,
-        }
-      : fallback?.tts?.edge,
-  };
-}
-
-export function mergeCharacterConfig(character: CharacterConfig, templateCharacters: CharacterConfig[]): CharacterConfig {
-  const fallback = templateCharacters.find((item) => item.id === character.id);
-  if (!fallback) {
-    return character;
-  }
-
-  return {
-    ...fallback,
-    ...character,
-    theme: {
-      ...fallback.theme,
-      ...character.theme,
-    },
-    tts: mergeTtsConfig(character, fallback),
-    spriteMeta: character.spriteMeta
-      ? {
-          ...fallback.spriteMeta,
-          ...character.spriteMeta,
-          eyes: character.spriteMeta.eyes ?? fallback.spriteMeta?.eyes,
-          mouth: character.spriteMeta.mouth ?? fallback.spriteMeta?.mouth,
-        }
-      : fallback.spriteMeta,
-  };
-}
-
 async function readCharacterTemplate(templateFile: string) {
   return readCharacterConfigFile(templateFile);
 }
 
 export async function loadCharacterConfig(options: LoadCharacterConfigOptions = {}) {
-  const configDir = options.configDir ?? CONFIG_DIR;
   const configFile = options.configFile ?? CONFIG_FILE;
   const templateFile = options.templateFile ?? TEMPLATE_FILE;
   const templateCharacters = await readCharacterTemplate(templateFile);
@@ -80,26 +31,10 @@ export async function loadCharacterConfig(options: LoadCharacterConfigOptions = 
   try {
     if (existsSync(configFile)) {
       const configuredCharacters = await readCharacterConfigFile(configFile);
-      const mergedCharacters = configuredCharacters.map((character) =>
-        mergeCharacterConfig(character, templateCharacters),
-      );
-      const missingTemplateCharacters = templateCharacters.filter(
-        (templateCharacter) => !configuredCharacters.some((character) => character.id === templateCharacter.id),
-      );
-      const characters = [...mergedCharacters, ...missingTemplateCharacters];
-      return { characters, source: "config" as const };
+      return { characters: configuredCharacters, source: "config" as const };
     }
   } catch (e) {
     console.warn("Failed to read characters config:", e);
-  }
-
-  try {
-    if (!existsSync(configDir)) {
-      await mkdir(configDir, { recursive: true });
-    }
-    await writeFile(configFile, JSON.stringify(templateCharacters, null, 2), "utf-8");
-  } catch {
-    // Non-critical
   }
 
   return { characters: templateCharacters, source: "template" as const };

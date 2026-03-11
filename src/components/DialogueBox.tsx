@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { CSSProperties } from "react";
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -239,12 +240,23 @@ export function DialogueBox() {
 
         {recentMessages.length === 0 && !isStreaming && activeChar && (
           <div className="text-center py-10" style={{ color: "var(--color-text-dim)" }}>
-            <div className="text-2xl mb-2 opacity-30">
-              {activeChar.displayName[0]}
+            <div
+              className="relative mx-auto mb-3 h-12 w-12 overflow-hidden rounded-full"
+              style={{
+                border: `1px solid ${activeChar.theme.accent}55`,
+                boxShadow: `0 0 0 4px ${activeChar.theme.accent}12`,
+              }}
+            >
+              <Image
+                src={activeChar.avatar}
+                alt={activeChar.displayName}
+                fill
+                sizes="48px"
+                className="object-cover opacity-80"
+              />
             </div>
             <p style={chatTextStyle}>
-              <span style={{ color: activeChar.theme.nameColor }}>{activeChar.displayName}</span>
-              과(와) 대화를 시작하세요
+              대화 준비 완료
             </p>
           </div>
         )}

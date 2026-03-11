@@ -64,11 +64,10 @@ export function PromptInput() {
   return (
     <div className="relative z-10 w-full max-w-3xl mx-auto">
       <div
-        className="flex items-end gap-2 px-4 py-3 rounded-b-xl"
+        className="flex items-center gap-2 rounded-b-xl border border-white/5 px-4 py-3 transition-[border-color,box-shadow] focus-within:border-ring/60 focus-within:shadow-[0_0_0_2px_rgba(122,162,255,0.18)]"
         style={{
           background: "var(--color-dialogue-bg)",
           backdropFilter: "blur(12px)",
-          border: "1px solid rgba(122,162,255,0.15)",
           borderTop: "1px solid rgba(122,162,255,0.08)",
         }}
       >
@@ -80,26 +79,28 @@ export function PromptInput() {
           title="채팅 로그"
           aria-label="채팅 로그"
         >
-          <ScrollText className="h-4 w-4" />
+          <ScrollText aria-hidden="true" className="h-4 w-4" />
         </Button>
 
         <textarea
           ref={inputRef}
+          aria-label={activeChar ? `${activeChar.displayName}에게 보낼 메시지` : "메시지 입력"}
+          name="message"
           value={text}
           onChange={handleInput}
           onKeyDown={handleKeyDown}
           placeholder={
             pairingState === "required"
-              ? "기기 승인 후 다시 연결하세요..."
+              ? "기기 승인 후 다시 연결하세요…"
               : connectionStatus !== "connected"
-              ? connectionCopy?.title || "Gateway에 먼저 연결하세요..."
+              ? connectionCopy?.title || "Gateway에 먼저 연결하세요…"
               : activeChar
-              ? `${activeChar.displayName}에게 말을 걸어보세요...`
-              : "캐릭터를 선택하세요..."
+              ? `${activeChar.displayName}에게 말을 걸어보세요…`
+              : "캐릭터를 선택하세요…"
           }
           disabled={connectionStatus !== "connected"}
           rows={1}
-          className="flex-1 bg-transparent text-sm resize-none outline-none placeholder:text-gray-500"
+          className="flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
           style={{ color: "var(--color-text)", maxHeight: "120px" }}
         />
 
@@ -112,7 +113,7 @@ export function PromptInput() {
             title="중단"
             aria-label="중단"
           >
-            <Square className="h-3.5 w-3.5 fill-current" />
+            <Square aria-hidden="true" className="h-3.5 w-3.5 fill-current" />
           </Button>
         ) : (
           <Button
@@ -127,7 +128,7 @@ export function PromptInput() {
             title="전송"
             aria-label="전송"
           >
-            <SendHorizontal className="h-4 w-4" />
+            <SendHorizontal aria-hidden="true" className="h-4 w-4" />
           </Button>
         )}
       </div>

@@ -7,9 +7,11 @@ import { promisify } from "util";
 import type { CharacterConfig } from "@/types";
 import { loadCharacterConfig } from "@/lib/character-config";
 import {
+  bootstrapAgents,
   buildIdentity,
   buildSoul,
   buildUser,
+  extractConfiguredAgentIds,
   getWorkspaceDir,
   syncCharacterAgent,
 } from "@/lib/agent-bootstrap";
@@ -19,13 +21,6 @@ const OPENCLAW_HOME = join(homedir(), ".openclaw");
 const OPENCLAW_BIN = process.env.OPENCLAW_BIN || "openclaw";
 
 export const runtime = "nodejs";
-
-interface OpenClawAgentsList {
-  agents?: Array<{
-    id?: string;
-    name?: string;
-  }>;
-}
 
 async function runOpenClaw(args: string[]) {
   try {
@@ -47,12 +42,8 @@ async function runOpenClaw(args: string[]) {
 
 async function readConfiguredAgentIds() {
   const raw = await runOpenClaw(["agents", "list", "--json"]);
-  const parsed = JSON.parse(raw) as OpenClawAgentsList;
-  return new Set(
-    (parsed.agents ?? [])
-      .map((agent) => agent.id || agent.name)
-      .filter((agentId): agentId is string => typeof agentId === "string" && agentId.length > 0),
-  );
+  const parsed = JSON.parse(raw) as Parameters<typeof extractConfiguredAgentIds>[0];
+  return extractConfiguredAgentIds(parsed);
 }
 
 async function writeBootstrapFiles(character: CharacterConfig, workspaceDir: string) {
@@ -80,45 +71,21 @@ async function createAgent(character: CharacterConfig) {
 }
 
 export async function POST() {
-  const { characters } = await loadCharacterConfig();
-  const configuredAgentIds = await readConfiguredAgentIds();
-  const created: string[] = [];
-  const updated: string[] = [];
-
-  for (const character of characters) {
-    try {
-      const result = await syncCharacterAgent(character, configuredAgentIds, {
+  const result = await bootstrapAgents({
+    loadCharacters: async () => {
+      const { characters } = await loadCharacterConfig();
+      return characters;
+    },
+    readConfiguredAgentIds,
+    syncCharacterAgent: async (character, configuredAgentIds) =>
+      syncCharacterAgent(character, configuredAgentIds, {
         createAgent,
         writeBootstrapFiles: async (target) => {
           await writeBootstrapFiles(target, getWorkspaceDir(OPENCLAW_HOME, target.agentId));
         },
         readConfiguredAgentIds,
-      });
-
-      if (result === "created") {
-        created.push(character.agentId);
-      } else {
-        updated.push(character.agentId);
-      }
-    } catch (e) {
-      const message = e instanceof Error ? e.message : "OpenClaw agent bootstrap failed";
-      return NextResponse.json(
-        {
-          ok: false,
-          created,
-          updated,
-          error: message,
-          missingBinary: message.includes("ENOENT"),
-        },
-        { status: 500 },
-      );
-    }
-  }
-
-  return NextResponse.json({
-    ok: true,
-    created,
-    updated,
-    waitMs: created.length > 0 ? 1000 : 0,
+      }),
   });
+
+  return NextResponse.json(result, { status: result.ok ? 200 : 500 });
 }

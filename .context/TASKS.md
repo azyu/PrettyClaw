@@ -10,8 +10,6 @@
 
 ## High
 
-- [ ] T06: Sakura 페르소나 완성 — `characters.ts` placeholder → 상세 personaPrompt
-- [ ] T07: Rin 페르소나 완성 — `characters.ts` placeholder → 상세 personaPrompt
 - [ ] T08: Error Boundary 추가 — 루트 + 컴포넌트별 fallback UI
 - [ ] T09: dead code 제거 — `push-persona/route.ts` (deprecated), `pushActivePersona` no-op
 - [ ] T10: 구조화된 logger — `console.log/warn/error` → logger 유틸 (레벨, 컨텍스트)

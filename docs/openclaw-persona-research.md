@@ -284,16 +284,6 @@ Each agent gets:
         id: "yuki",
         workspace: "~/.openclaw/workspace-yuki",
         identity: { name: "유키", emoji: "snowflake" }
-      },
-      {
-        id: "sakura",
-        workspace: "~/.openclaw/workspace-sakura",
-        identity: { name: "사쿠라", emoji: "cherry_blossom" }
-      },
-      {
-        id: "rin",
-        workspace: "~/.openclaw/workspace-rin",
-        identity: { name: "린", emoji: "fire" }
       }
     ]
   }
@@ -356,18 +346,6 @@ Create one OpenClaw agent per character, each with its own workspace:
         workspace: "~/.openclaw/workspace-prettyclaw-yuki",
         identity: { name: "유키", emoji: "snowflake" },
         model: "anthropic/claude-sonnet-4-5"  // or whatever
-      },
-      {
-        id: "prettyclaw-sakura",
-        workspace: "~/.openclaw/workspace-prettyclaw-sakura",
-        identity: { name: "사쿠라", emoji: "cherry_blossom" },
-        model: "anthropic/claude-sonnet-4-5"
-      },
-      {
-        id: "prettyclaw-rin",
-        workspace: "~/.openclaw/workspace-prettyclaw-rin",
-        identity: { name: "린", emoji: "fire" },
-        model: "anthropic/claude-sonnet-4-5"
       }
     ]
   }
@@ -414,8 +392,6 @@ agent:<agentId>:<sessionScope>
 For PrettyClaw, use:
 ```
 agent:prettyclaw-yuki:main       // yuki's main session
-agent:prettyclaw-sakura:main     // sakura's main session
-agent:prettyclaw-rin:main        // rin's main session
 ```
 
 **Pros:**
@@ -457,8 +433,6 @@ Write an OpenClaw plugin that hooks into `agent:bootstrap` and dynamically swaps
 
 1. [ ] Move workspace directories to top-level (not nested in main workspace):
    - `~/.openclaw/workspace-prettyclaw-yuki`
-   - `~/.openclaw/workspace-prettyclaw-sakura`
-   - `~/.openclaw/workspace-prettyclaw-rin`
 
 2. [ ] Create SOUL.md for each character with full persona instructions
 3. [ ] Create IDENTITY.md with structured fields (Name, Emoji, Avatar)

@@ -15,6 +15,14 @@ export function DebugInfo() {
     ? (activeSessionKeys.get(activeCharacterId) || activeChar?.sessionKey || "—")
     : "—";
   const stream = streamStates.get(sessionKey);
+  const tts = activeChar?.tts;
+  const ttsLabel = !tts
+    ? "off"
+    : !tts.enabled
+    ? `${tts.provider} disabled`
+    : tts.provider === "typecast"
+    ? `typecast ${tts.typecast?.voiceId || "—"}`
+    : `edge ${tts.edge?.voice || "—"}`;
 
   return (
     <div
@@ -24,6 +32,7 @@ export function DebugInfo() {
       <div>session: {sessionKey}</div>
       <div>agent: {activeChar?.agentId || "—"}</div>
       <div>model: {lastModel || "—"}</div>
+      <div>tts: {ttsLabel}</div>
       <div>status: {connectionStatus}{stream?.streaming ? " | streaming" : ""}</div>
     </div>
   );

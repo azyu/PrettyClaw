@@ -29,7 +29,7 @@ PrettyClaw/
 │   ├── components/                   # 10 VN UI components
 │   ├── stores/useAppStore.ts         # single Zustand store (763 LOC) ⚠️
 │   ├── lib/
-│   │   ├── character-config.ts       # loads/seeds ~/.config/prettyclaw/characters.json
+│   │   ├── character-config.ts       # loads ~/.config/prettyclaw/characters.json or falls back to repo defaults
 │   │   ├── agent-bootstrap.ts        # syncs agent workspace prompt files
 │   │   ├── tts.ts                    # normalize + active provider resolution
 │   │   ├── tts-server.ts             # provider dispatch for synthesis
@@ -69,7 +69,7 @@ npm run build
 - Keep Zustand updates immutable with `new Map()`, `new Set()`, spreads, etc.
 - Keep user-facing UI text in Korean
 - Keep `src/lib/` free of React and store dependencies
-- Treat `~/.config/prettyclaw/characters.json` as the source of truth for characters
+- Treat `~/.config/prettyclaw/characters.json` as the active character source when present, with `config/characters.template.json` as fallback defaults
 - Add new default characters to `config/characters.template.json`
 - Keep TTS config in nested provider form: `tts.provider` + `tts.typecast`/`tts.edge`
 - For bug fixes, add a `node:test` reproduction test when practical
@@ -86,8 +86,7 @@ npm run build
 ## Known Gotchas
 
 - `/api/bootstrap-agents` does more than create missing agents. It also rewrites `IDENTITY.md`, `SOUL.md`, and `USER.md` for existing agent workspaces.
-- `loadCharacterConfig()` seeds `~/.config/prettyclaw/characters.json` from the template when the file does not exist.
-- `characters.json` is merged with the template by `id`. Partial overrides are fine, but changing `id` breaks fallback behavior.
+- `loadCharacterConfig()` reads `~/.config/prettyclaw/characters.json` as-is when it exists, and falls back to `config/characters.template.json` only when it does not.
 - TTS now uses nested provider config. `tts.provider` selects the active backend, and both `tts.typecast` and `tts.edge` may coexist.
 - Existing flat TTS config is not auto-migrated. If local TTS stops working after this change, update `~/.config/prettyclaw/characters.json` to the nested shape.
 - `push-persona/route.ts` is deprecated. Bootstrap sync is the current persona update path.
@@ -121,7 +120,7 @@ TYPECAST_API_KEY=optional-if-using-typecast
 
 Additional local files:
 
-- `~/.config/prettyclaw/characters.json` — character source of truth
+- `~/.config/prettyclaw/characters.json` — local character overrides/additions
 - `~/.openclaw/workspace-<agentId>/` — per-agent workspace written by bootstrap
 - Edge TTS does not need an API key, but it still runs server-side through `/api/tts`
 

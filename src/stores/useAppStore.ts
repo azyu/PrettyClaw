@@ -7,10 +7,12 @@ import type {
   GatewayEvent,
   GatewayConnectionIssue,
   PairingState,
+  TtsMessageState,
   TtsPlaybackRequest,
 } from "@/types";
 import { GatewayClient } from "@/lib/gateway-client";
-import { createTtsPlaybackRequest } from "@/lib/tts";
+import { clampChatFontSizePx, loadChatFontSizePx, saveChatFontSizePx } from "@/lib/chat-font-size";
+import { createTtsPlaybackRequest, setTtsMessageState } from "@/lib/tts";
 import { normalizeHistoryMessageContent } from "@/lib/chat-history";
 import { v4 as uuidv4 } from "uuid";
 
@@ -67,13 +69,21 @@ interface AppState {
   // UI
   showSettings: boolean;
   showLog: boolean;
+  chatFontSizePx: number;
   ttsAutoplay: boolean;
   pendingTts: TtsPlaybackRequest | null;
+  ttsMessageStates: Map<string, TtsMessageState>;
+  activeTtsMessageId: string | null;
   ttsStopToken: number;
+  ttsPlaybackToken: number;
 
   // Actions
   setGatewaySettings: (settings: GatewaySettings) => void;
+  setChatFontSizePx: (size: number) => void;
   setTtsAutoplay: (enabled: boolean) => void;
+  requestTtsReplay: (messageId: string, characterId: string | undefined, text: string) => void;
+  setTtsMessagePlaybackState: (messageId: string, state: TtsMessageState | null) => void;
+  setActiveTtsMessageId: (messageId: string | null) => void;
   connect: () => void;
   disconnect: () => void;
   selectCharacter: (characterId: string) => void;
@@ -96,6 +106,14 @@ interface AppState {
 
 const LS_SESSION_PREFIX = "prettyclaw-session-";
 const LS_TTS_AUTOPLAY_KEY = "prettyclaw-tts-autoplay";
+const LS_GATEWAY_SETTINGS_KEY = "prettyclaw-gateway-settings";
+
+function getDefaultGatewaySettings(): GatewaySettings {
+  return {
+    url: process.env.NEXT_PUBLIC_GATEWAY_URL || "ws://localhost:18789",
+    token: process.env.NEXT_PUBLIC_GATEWAY_TOKEN || "",
+  };
+}
 
 function saveLastSession(characterId: string, sessionKey: string) {
   try { localStorage.setItem(`${LS_SESSION_PREFIX}${characterId}`, sessionKey); } catch {}
@@ -118,6 +136,31 @@ function loadTtsAutoplay(): boolean {
     return JSON.parse(raw) !== false;
   } catch {
     return true;
+  }
+}
+
+function saveGatewaySettings(settings: GatewaySettings) {
+  try {
+    localStorage.setItem(LS_GATEWAY_SETTINGS_KEY, JSON.stringify(settings));
+  } catch {}
+}
+
+function loadGatewaySettings(): GatewaySettings {
+  const defaults = getDefaultGatewaySettings();
+
+  try {
+    const raw = localStorage.getItem(LS_GATEWAY_SETTINGS_KEY);
+    if (!raw) {
+      return defaults;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<GatewaySettings> | null;
+    return {
+      url: typeof parsed?.url === "string" ? parsed.url : defaults.url,
+      token: typeof parsed?.token === "string" ? parsed.token : defaults.token,
+    };
+  } catch {
+    return defaults;
   }
 }
 
@@ -165,10 +208,7 @@ function setStream(
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
-  gatewaySettings: {
-    url: process.env.NEXT_PUBLIC_GATEWAY_URL || "ws://localhost:18789",
-    token: process.env.NEXT_PUBLIC_GATEWAY_TOKEN || "",
-  },
+  gatewaySettings: loadGatewaySettings(),
   connectionStatus: "disconnected",
   gatewayClient: null,
   connectionIssue: null,
@@ -185,14 +225,25 @@ export const useAppStore = create<AppState>((set, get) => ({
   showSessionHistory: false,
   showSettings: false,
   showLog: false,
+  chatFontSizePx: loadChatFontSizePx(),
   ttsAutoplay: loadTtsAutoplay(),
   pendingTts: null,
+  ttsMessageStates: new Map(),
+  activeTtsMessageId: null,
   ttsStopToken: 0,
+  ttsPlaybackToken: 0,
 
   setGatewaySettings: (settings) => {
+    saveGatewaySettings(settings);
     set({ gatewaySettings: settings });
     const client = get().gatewayClient;
     if (client) client.updateSettings(settings);
+  },
+
+  setChatFontSizePx: (size) => {
+    const nextSize = clampChatFontSizePx(size);
+    saveChatFontSizePx(nextSize);
+    set({ chatFontSizePx: nextSize });
   },
 
   setTtsAutoplay: (enabled) => {
@@ -201,6 +252,39 @@ export const useAppStore = create<AppState>((set, get) => ({
       ttsAutoplay: enabled,
       ...(enabled ? {} : { ttsStopToken: state.ttsStopToken + 1 }),
     }));
+  },
+
+  requestTtsReplay: (messageId, characterId, text) => {
+    if (!characterId) {
+      return;
+    }
+
+    const { characters, ttsPlaybackToken } = get();
+    const character = characters.find((item) => item.id === characterId);
+    const nextToken = ttsPlaybackToken + 1;
+    const pendingTts = createTtsPlaybackRequest(messageId, character, text, true, nextToken);
+    if (!pendingTts) {
+      return;
+    }
+
+    set((state) => ({
+      pendingTts,
+      ttsPlaybackToken: nextToken,
+      ttsMessageStates:
+        state.ttsMessageStates.get(messageId) === "ready"
+          ? state.ttsMessageStates
+          : setTtsMessageState(state.ttsMessageStates, messageId, "loading"),
+    }));
+  },
+
+  setTtsMessagePlaybackState: (messageId, state) => {
+    set((current) => ({
+      ttsMessageStates: setTtsMessageState(current.ttsMessageStates, messageId, state),
+    }));
+  },
+
+  setActiveTtsMessageId: (messageId) => {
+    set({ activeTtsMessageId: messageId });
   },
 
   connect: () => {
@@ -733,7 +817,7 @@ function handleChatEvent(
     }
 
     if (finalText) {
-      const { messages, characters, ttsAutoplay } = get();
+      const { messages, characters, ttsAutoplay, ttsPlaybackToken } = get();
       const character = characters.find((item) => item.id === charId);
       const assistantMsg: ChatMessage = {
         id: uuidv4(),
@@ -742,15 +826,20 @@ function handleChatEvent(
         timestamp: Date.now(),
         characterId: charId,
       };
-      const pendingTts = createTtsPlaybackRequest(assistantMsg.id, character, finalText, ttsAutoplay);
+      const nextToken = ttsPlaybackToken + 1;
+      const pendingTts = createTtsPlaybackRequest(assistantMsg.id, character, finalText, ttsAutoplay, nextToken);
       const charMessages = new Map(messages);
       const existing = charMessages.get(sessionKey) || [];
       charMessages.set(sessionKey, [...existing, assistantMsg]);
-      set({
+      set((state) => ({
         messages: charMessages,
         streamStates: setStream(get().streamStates, sessionKey, EMPTY_STREAM),
         pendingTts,
-      });
+        ttsPlaybackToken: pendingTts ? nextToken : state.ttsPlaybackToken,
+        ttsMessageStates: pendingTts
+          ? setTtsMessageState(state.ttsMessageStates, assistantMsg.id, "loading")
+          : state.ttsMessageStates,
+      }));
     } else {
       set({ streamStates: setStream(get().streamStates, sessionKey, EMPTY_STREAM) });
     }

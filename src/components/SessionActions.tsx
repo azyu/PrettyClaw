@@ -27,7 +27,7 @@ export function SessionActions() {
         className="bg-black/50 text-foreground backdrop-blur-sm"
         title="새 채팅"
       >
-        <Plus className="h-3.5 w-3.5" />
+        <Plus aria-hidden="true" className="h-3.5 w-3.5" />
         새 채팅
       </Button>
 
@@ -39,7 +39,7 @@ export function SessionActions() {
         className="bg-black/50 text-foreground backdrop-blur-sm"
         title="세션 기록"
       >
-        <History className="h-3.5 w-3.5" />
+        <History aria-hidden="true" className="h-3.5 w-3.5" />
         세션
       </Button>
     </div>

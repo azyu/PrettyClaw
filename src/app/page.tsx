@@ -19,7 +19,11 @@ export default function Home() {
   const connect = useAppStore((s) => s.connect);
   const connectionStatus = useAppStore((s) => s.connectionStatus);
   const [readyToConnect, setReadyToConnect] = useState(false);
+  const [isTallLayout, setIsTallLayout] = useState(false);
+  const [isCenteredStageLayout, setIsCenteredStageLayout] = useState(false);
+  const [dialogueDockHeight, setDialogueDockHeight] = useState(0);
   const initialized = useRef(false);
+  const dialogueDockRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (initialized.current) {
@@ -49,6 +53,46 @@ export default function Home() {
       connect();
     }
   }, [connect, connectionStatus, readyToConnect]);
+
+  useEffect(() => {
+    const update = () => {
+      const viewportRatio = window.innerHeight / Math.max(window.innerWidth, 1);
+
+      setIsTallLayout(viewportRatio >= 1.15);
+      setIsCenteredStageLayout(viewportRatio >= 1.02 && window.innerHeight >= 1500 && window.innerWidth >= 1400);
+    };
+
+    update();
+    window.addEventListener("resize", update);
+
+    return () => {
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  useEffect(() => {
+    const element = dialogueDockRef.current;
+    if (!element) {
+      return;
+    }
+
+    const update = () => {
+      setDialogueDockHeight(element.clientHeight);
+    };
+
+    update();
+
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const dialogueBottomPaddingPx = isTallLayout ? 40 : 24;
+  const backgroundFocusOffsetPx = dialogueDockHeight + dialogueBottomPaddingPx;
+
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       {/* Left sidebar - character selection */}
@@ -57,7 +101,11 @@ export default function Home() {
       {/* Main scene area */}
       <div className="flex-1 relative flex flex-col">
         {/* Scene background + character sprite */}
-        <SceneLayer />
+        <SceneLayer
+          isTallLayout={isTallLayout}
+          isCenteredStageLayout={isCenteredStageLayout}
+          backgroundFocusOffsetPx={backgroundFocusOffsetPx}
+        />
 
         {/* Session action buttons (top-right) */}
         <SessionActions />
@@ -66,9 +114,11 @@ export default function Home() {
         <div className="flex-1" />
 
         {/* Dialogue box + input at bottom */}
-        <div className="relative z-10 pb-6 px-6">
-          <DialogueBox />
-          <PromptInput />
+        <div className={`relative z-10 px-6 ${isTallLayout ? "pb-10 pt-10" : "pb-6"}`}>
+          <div ref={dialogueDockRef}>
+            <DialogueBox />
+            <PromptInput />
+          </div>
         </div>
       </div>
 

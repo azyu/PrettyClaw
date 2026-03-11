@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Settings2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useAppStore } from "@/stores/useAppStore";
 import { getConnectionIssueCopy, getConnectionStatusLabel } from "@/lib/gateway-connection";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ export function CharacterSidebar() {
   const toggleSettings = useAppStore((s) => s.toggleSettings);
   const streamStates = useAppStore((s) => s.streamStates);
   const activeSessionKeys = useAppStore((s) => s.activeSessionKeys);
+  const prefersReducedMotion = useReducedMotion();
   const connectionCopy = getConnectionIssueCopy(connectionIssue);
   const connectionLabel = getConnectionStatusLabel(connectionStatus, pairingState);
 
@@ -57,13 +58,13 @@ export function CharacterSidebar() {
             <motion.button
               key={char.id}
               onClick={() => selectCharacter(char.id)}
-              className="w-full flex items-center gap-3 px-4 py-3 text-left transition-colors"
+              className="group w-full flex items-start gap-3 px-4 py-3 text-left transition-colors"
               style={{
                 background: isActive ? "rgba(122,162,255,0.12)" : "transparent",
                 borderLeft: isActive ? `3px solid ${char.theme.accent}` : "3px solid transparent",
               }}
-              whileHover={{ backgroundColor: "rgba(122,162,255,0.08)" }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={prefersReducedMotion ? undefined : { backgroundColor: "rgba(122,162,255,0.08)" }}
+              whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
             >
               {/* Avatar */}
               <div className="relative shrink-0">
@@ -89,8 +90,8 @@ export function CharacterSidebar() {
                       border: `2px solid ${char.theme.accent}`,
                       borderTopColor: "transparent",
                     }}
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    animate={prefersReducedMotion ? undefined : { rotate: 360 }}
+                    transition={prefersReducedMotion ? undefined : { duration: 1, repeat: Infinity, ease: "linear" }}
                   />
                 )}
               </div>
@@ -103,14 +104,17 @@ export function CharacterSidebar() {
                     <motion.span
                       className="shrink-0 text-[10px]"
                       style={{ color: char.theme.accent }}
-                      animate={{ opacity: [0.4, 1, 0.4] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
+                      animate={prefersReducedMotion ? undefined : { opacity: [0.4, 1, 0.4] }}
+                      transition={prefersReducedMotion ? undefined : { duration: 1.5, repeat: Infinity }}
                     >
-                      thinking...
+                      생성 중…
                     </motion.span>
                   )}
                 </div>
-                <div className="text-xs truncate" style={{ color: "var(--color-text-dim)" }}>
+                <div
+                  className="text-xs truncate pr-1 group-hover:overflow-visible group-hover:whitespace-normal group-hover:text-clip"
+                  style={{ color: "var(--color-text-dim)" }}
+                >
                   {char.description || char.displayName}
                 </div>
               </div>
@@ -126,7 +130,7 @@ export function CharacterSidebar() {
           variant="secondary"
           className="w-full justify-center text-xs text-muted-foreground"
         >
-          <Settings2 className="h-3.5 w-3.5" />
+          <Settings2 aria-hidden="true" className="h-3.5 w-3.5" />
           설정
         </Button>
       </div>

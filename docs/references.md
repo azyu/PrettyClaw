@@ -4,7 +4,7 @@
 
 PrettyClaw는 OpenClaw Gateway용 **비주얼 노벨(VN) 스타일 에이전트 UI**.
 
-- 3명의 캐릭터(유키, 사쿠라, 린)가 각각 독립된 OpenClaw 에이전트로 동작
+- 저장소 기본 캐릭터는 유키이며, 로컬 `characters.json`이 있으면 그 목록을 그대로 사용
 - WebSocket RPC 프로토콜로 Gateway와 통신 (Protocol v3)
 - 캐릭터별 독립 세션, 페르소나 격리, 스트리밍 응답
 - VN 레이아웃: 사이드바 → 배경 + 스프라이트 → 대화창 + 입력
@@ -109,9 +109,8 @@ src/
 | 1 | 테스트 프레임워크 선택 (vitest vs jest) | TBD — vitest 추천 |
 | 2 | useAppStore slice 분리 전략 | TBD — connection/character/message/session/ui |
 | 3 | CI/CD 파이프라인 (GitHub Actions) | TBD |
-| 4 | Sakura/Rin placeholder 페르소나 완성 | TBD |
-| 5 | push-persona API route dead code 제거 | TBD |
-| 6 | E2E 테스트 전략 (Playwright) | TBD |
-| 7 | 반응형 레이아웃 (모바일) | TBD |
-| 8 | device pairing 승인 UI를 WebUI에 넣을지 여부 | TBD — 현재는 CLI 안내 |
-| 9 | 로컬 `characters.json`의 기존 flat TTS 스키마를 언제 정리할지 | TBD — 현재 구현은 nested provider 스키마 기준 |
+| 4 | push-persona API route dead code 제거 | TBD |
+| 5 | E2E 테스트 전략 (Playwright) | TBD |
+| 6 | 반응형 레이아웃 (모바일) | TBD |
+| 7 | device pairing 승인 UI를 WebUI에 넣을지 여부 | TBD — 현재는 CLI 안내 |
+| 8 | 로컬 `characters.json`의 기존 flat TTS 스키마를 언제 정리할지 | TBD — 현재 구현은 nested provider 스키마 기준 |
