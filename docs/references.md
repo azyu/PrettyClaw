@@ -21,6 +21,7 @@ PrettyClaw는 OpenClaw Gateway용 **비주얼 노벨(VN) 스타일 에이전트 
 | Animation | Framer Motion | 12.35 | AnimatePresence, layout |
 | Markdown | react-markdown | 10.1 | 어시스턴트 응답 렌더링 |
 | ID | uuid | 13.0 | 메시지/리퀘스트 ID 생성 |
+| TTS | Typecast + Edge TTS | Typecast API + node-edge-tts 1.2 | 캐릭터별 provider 선택, 서버 경유 음성 합성 |
 
 ## Architecture Decisions
 
@@ -46,10 +47,20 @@ PrettyClaw는 OpenClaw Control UI와 같은 방식으로 브라우저 `device id
 
 고정 레이어 구조: `SceneLayer`(배경 + 스프라이트) → `DialogueBox`(스트리밍 텍스트) → `PromptInput`. `CharacterSidebar`로 캐릭터 전환. 오버레이: Settings, ChatLog, SessionHistory, DebugInfo.
 
+### ADR-006: Provider-Agnostic TTS
+
+TTS는 `CharacterConfig.tts`에서 provider를 선택하고, provider별 설정은 함께 보관한다.
+
+- `tts.provider`로 현재 활성 provider를 고른다.
+- `tts.typecast`, `tts.edge`에 provider별 설정을 공존시킨다.
+- 클라이언트는 항상 `/api/tts`만 호출하고, 서버가 Typecast API 또는 Edge TTS 합성으로 분기한다.
+- Edge TTS는 서버에서 `node-edge-tts`로 합성하며, Typecast는 `TYPECAST_API_KEY`가 있을 때만 사용한다.
+
 ## Implementation Guides
 
 - [character-sprite-overlays.md](./character-sprite-overlays.md) — 스프라이트 눈/입 overlay 자산 규칙 및 `spriteMeta` 작성 방법
 - [gateway-device-auth.md](./gateway-device-auth.md) — 브라우저 device identity, pairing, device token 저장 방식
+- [typecast-tts-integration-review.md](./typecast-tts-integration-review.md) — 현재 TTS 구조와 provider 공존형 설정 메모
 
 ## File Map
 
@@ -62,6 +73,7 @@ src/
 │   └── api/
 │       ├── characters/route.ts   # 캐릭터 목록 API
 │       ├── bootstrap-agents/route.ts # 누락된 OpenClaw agent bootstrap
+│       ├── tts/route.ts          # provider별 TTS 서버 라우트
 │       └── push-persona/route.ts # 페르소나 푸시 API (deprecated)
 ├── components/
 │   ├── CharacterSidebar.tsx  # 캐릭터 선택 사이드바 (128 LOC)
@@ -81,7 +93,9 @@ src/
 │   ├── gateway-device-auth.ts # 브라우저 device key/token 저장 및 서명
 │   ├── gateway-connection.ts # 연결 상태/에러 메시지 매핑
 │   ├── character-config.ts   # 캐릭터 설정 로더 + 기본값 병합
-│   └── characters.ts         # 기본 캐릭터 설정
+│   ├── tts.ts                # TTS 공통 normalize/선택 로직
+│   ├── tts-server.ts         # provider 분기 서버 합성 로직
+│   └── edge-tts.ts           # node-edge-tts wrapper
 ├── types/
 │   └── index.ts              # 공유 타입 정의
 └── public/
@@ -100,3 +114,4 @@ src/
 | 6 | E2E 테스트 전략 (Playwright) | TBD |
 | 7 | 반응형 레이아웃 (모바일) | TBD |
 | 8 | device pairing 승인 UI를 WebUI에 넣을지 여부 | TBD — 현재는 CLI 안내 |
+| 9 | 로컬 `characters.json`의 기존 flat TTS 스키마를 언제 정리할지 | TBD — 현재 구현은 nested provider 스키마 기준 |

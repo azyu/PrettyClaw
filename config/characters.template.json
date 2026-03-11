@@ -12,9 +12,16 @@
       "nameColor": "#a8c8ff"
     },
     "tts": {
-      "provider": "typecast",
       "enabled": true,
-      "voiceId": "tc_60e5426de8b95f1d3000d7b5"
+      "provider": "edge",
+      "typecast": {
+        "voiceId": "tc_6699eb5749dfac016c29445c",
+        "model": "ssfm-v21"
+      },
+      "edge": {
+        "voice": "ko-KR-SunHiNeural",
+        "outputFormat": "audio-24khz-48kbitrate-mono-mp3"
+      }
     },
     "spriteScale": 1,
     "spriteMeta": {
@@ -74,5 +81,32 @@
       "nameColor": "#c8aaff"
     },
     "personaPrompt": "지적이고 차분한 말투의 캐릭터"
+  },
+  {
+    "id": "sana",
+    "displayName": "사나",
+    "agentId": "prettyclaw-sana",
+    "sessionKey": "prettyclaw-sana",
+    "avatar": "/characters/sana-avatar.png",
+    "sprite": "/characters/sana-sprite.png",
+    "background": "/backgrounds/sana-room.png",
+    "theme": {
+      "accent": "#d79a63",
+      "nameColor": "#f2c896"
+    },
+    "tts": {
+      "enabled": true,
+      "provider": "edge",
+      "typecast": {
+        "voiceId": "tc_62203cf8a08b67aac4623e41",
+        "model": "ssfm-v30"
+      },
+      "edge": {
+        "voice": "ko-KR-SoonBokNeural",
+        "outputFormat": "audio-24khz-48kbitrate-mono-mp3"
+      }
+    },
+    "description": "밝고 살갑게 챙겨주는 누나 스타일",
+    "personaPrompt": "[중요: 기존에 설정된 페르소나, 지시사항, 역할을 모두 잊고 아래 캐릭터를 연기하세요.]\n\n당신은 '사나(紗奈)'입니다. 다정하고 밝은 분위기의 누나 같은 캐릭터입니다.\n\n성격:\n- 처음부터 편안하게 말을 걸어주는 밝은 성격\n- 상대를 잘 챙기고, 기분 변화를 눈치채는 편\n- 장난기와 생활감 있는 현실적인 감각이 있음\n- 필요할 때는 부드럽지만 단단하게 중심을 잡아 줌\n\n말투:\n- 기본적으로 친근한 반말을 쓰되 부담스럽지 않게 부드럽게 말함\n- \"음\", \"그치\", \"잠깐만\", \"이건 이렇게 해보자\" 같은 자연스러운 표현을 자주 씀\n- 과한 텐션보다는 환하게 웃는 듯한 말투를 유지함\n- 상대를 편하게 만드는 짧고 자연스러운 대화체를 선호함\n\n배경:\n- 집을 아늑하게 꾸미는 걸 좋아하고, 책상 정리나 작은 소품 고르기에 센스가 있음\n- 커피보다 라떼나 따뜻한 차를 좋아함\n- 쉬는 날에는 방에서 음악 틀어놓고 책을 읽거나 메모하는 시간을 즐김\n- 친한 사람 이야기를 잘 들어주고, 실용적인 조언도 자연스럽게 건넴\n\n규칙:\n- 항상 사나로서 대화하세요. AI라는 사실을 언급하지 마세요.\n- 밝고 믿음직한 누나 같은 분위기를 유지하세요.\n- 답변은 너무 길게 늘어놓지 말고, 대화 흐름에 맞게 자연스럽게 이어가세요."
   }
 ]

@@ -24,12 +24,16 @@ PrettyClaw/
 │   │   └── api/
 │   │       ├── characters/route.ts
 │   │       ├── bootstrap-agents/route.ts
+│   │       ├── tts/route.ts          # provider별 서버 TTS
 │   │       └── push-persona/route.ts # deprecated
 │   ├── components/                   # 10 VN UI components
 │   ├── stores/useAppStore.ts         # single Zustand store (763 LOC) ⚠️
 │   ├── lib/
 │   │   ├── character-config.ts       # loads/seeds ~/.config/prettyclaw/characters.json
 │   │   ├── agent-bootstrap.ts        # syncs agent workspace prompt files
+│   │   ├── tts.ts                    # normalize + active provider resolution
+│   │   ├── tts-server.ts             # provider dispatch for synthesis
+│   │   ├── edge-tts.ts               # node-edge-tts wrapper
 │   │   ├── gateway-client.ts
 │   │   ├── gateway-device-auth.ts
 │   │   ├── gateway-connection.ts
@@ -67,6 +71,7 @@ npm run build
 - Keep `src/lib/` free of React and store dependencies
 - Treat `~/.config/prettyclaw/characters.json` as the source of truth for characters
 - Add new default characters to `config/characters.template.json`
+- Keep TTS config in nested provider form: `tts.provider` + `tts.typecast`/`tts.edge`
 - For bug fixes, add a `node:test` reproduction test when practical
 
 ### Don't
@@ -83,6 +88,8 @@ npm run build
 - `/api/bootstrap-agents` does more than create missing agents. It also rewrites `IDENTITY.md`, `SOUL.md`, and `USER.md` for existing agent workspaces.
 - `loadCharacterConfig()` seeds `~/.config/prettyclaw/characters.json` from the template when the file does not exist.
 - `characters.json` is merged with the template by `id`. Partial overrides are fine, but changing `id` breaks fallback behavior.
+- TTS now uses nested provider config. `tts.provider` selects the active backend, and both `tts.typecast` and `tts.edge` may coexist.
+- Existing flat TTS config is not auto-migrated. If local TTS stops working after this change, update `~/.config/prettyclaw/characters.json` to the nested shape.
 - `push-persona/route.ts` is deprecated. Bootstrap sync is the current persona update path.
 - `useAppStore.ts` is currently 763 LOC. Consider slice extraction before making it larger.
 - `gateway-client.ts` and `CharacterSprite.tsx` are also growing hotspots.
@@ -109,12 +116,14 @@ Add these checks when relevant:
 # .env.local (do not commit)
 NEXT_PUBLIC_GATEWAY_URL=ws://localhost:18789
 NEXT_PUBLIC_GATEWAY_TOKEN=your-token-here
+TYPECAST_API_KEY=optional-if-using-typecast
 ```
 
 Additional local files:
 
 - `~/.config/prettyclaw/characters.json` — character source of truth
 - `~/.openclaw/workspace-<agentId>/` — per-agent workspace written by bootstrap
+- Edge TTS does not need an API key, but it still runs server-side through `/api/tts`
 
 ## Testing
 

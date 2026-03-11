@@ -1,8 +1,12 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Markdown from "react-markdown";
+import { LoaderCircle, Volume2 } from "lucide-react";
+import { ChatMarkdown } from "@/components/ChatMarkdown";
+import { getChatFontSizeStyle } from "@/lib/chat-font-size";
+import { canReplayTts } from "@/lib/tts";
 import { useAppStore } from "@/stores/useAppStore";
 
 function NameTag({ name, accent, nameColor }: { name: string; accent: string; nameColor: string }) {
@@ -33,7 +37,11 @@ export function DialogueBox() {
   const characters = useAppStore((s) => s.characters);
   const activeCharacterId = useAppStore((s) => s.activeCharacterId);
   const messages = useAppStore((s) => s.messages);
+  const activeTtsMessageId = useAppStore((s) => s.activeTtsMessageId);
+  const requestTtsReplay = useAppStore((s) => s.requestTtsReplay);
   const streamStates = useAppStore((s) => s.streamStates);
+  const ttsMessageStates = useAppStore((s) => s.ttsMessageStates);
+  const chatFontSizePx = useAppStore((s) => s.chatFontSizePx);
 
   const sessionKey = useActiveSessionKey();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -45,6 +53,7 @@ export function DialogueBox() {
   const thinkingText = stream?.thinking ?? "";
   const toolName = stream?.toolName ?? "";
   const toolPhase = stream?.toolPhase ?? "idle";
+  const chatTextStyle = getChatFontSizeStyle(chatFontSizePx) as CSSProperties;
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -67,50 +76,81 @@ export function DialogueBox() {
         }}
       >
         <AnimatePresence mode="sync">
-          {recentMessages.map((msg, i) => (
-            <motion.div
-              key={msg.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25, delay: i === recentMessages.length - 1 ? 0.05 : 0 }}
-              className="mb-3"
-            >
-              {msg.role === "user" ? (
-                <div className="flex justify-end">
-                  <div
-                    className="max-w-[80%] px-4 py-2.5 rounded-2xl rounded-br-sm text-sm"
-                    style={{
-                      background: "rgba(122,162,255,0.12)",
-                      color: "var(--color-text)",
-                      border: "1px solid rgba(122,162,255,0.08)",
-                    }}
-                  >
-                    {msg.content}
+          {recentMessages.map((msg, i) => {
+            const ttsState = ttsMessageStates.get(msg.id);
+            const isTtsActive = activeTtsMessageId === msg.id;
+            const messageCharacter = msg.characterId
+              ? characters.find((character) => character.id === msg.characterId)
+              : activeChar;
+            const showTtsButton = canReplayTts(messageCharacter) || ttsState === "loading" || isTtsActive;
+
+            return (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25, delay: i === recentMessages.length - 1 ? 0.05 : 0 }}
+                className="mb-3"
+              >
+                {msg.role === "user" ? (
+                  <div className="flex justify-end">
+                    <div
+                      className="max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2.5"
+                      style={{
+                        ...chatTextStyle,
+                        background: "rgba(122,162,255,0.12)",
+                        color: "var(--color-text)",
+                        border: "1px solid rgba(122,162,255,0.08)",
+                      }}
+                    >
+                      {msg.content}
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div>
-                  {activeChar && (
-                    <NameTag
-                      name={activeChar.displayName}
-                      accent={activeChar.theme.accent}
-                      nameColor={activeChar.theme.nameColor}
-                    />
-                  )}
-                  <div
-                    className="max-w-[90%] px-4 py-2.5 rounded-2xl rounded-tl-sm text-sm leading-relaxed prose prose-invert prose-sm max-w-none"
-                    style={{
-                      background: "rgba(255,255,255,0.04)",
-                      color: "var(--color-text)",
-                      border: "1px solid rgba(255,255,255,0.04)",
-                    }}
-                  >
-                    <Markdown>{msg.content}</Markdown>
+                ) : (
+                  <div>
+                    {activeChar && (
+                      <NameTag
+                        name={activeChar.displayName}
+                        accent={activeChar.theme.accent}
+                        nameColor={activeChar.theme.nameColor}
+                      />
+                    )}
+                    <div
+                      className="relative max-w-[90%] rounded-2xl rounded-tl-sm px-4 py-2.5 pr-12"
+                      style={{
+                        ...chatTextStyle,
+                        background: "rgba(255,255,255,0.04)",
+                        color: "var(--color-text)",
+                        border: "1px solid rgba(255,255,255,0.04)",
+                      }}
+                    >
+                      <ChatMarkdown content={msg.content} fontSizePx={chatFontSizePx} />
+                      {showTtsButton && (
+                        <button
+                          type="button"
+                          onClick={() => requestTtsReplay(msg.id, msg.characterId, msg.content)}
+                          disabled={ttsState === "loading"}
+                          aria-label="음성 다시 듣기"
+                          className="absolute bottom-2 right-2 inline-flex h-8 w-8 items-center justify-center rounded-full transition"
+                          style={{
+                            background: isTtsActive ? `${activeChar?.theme.accent ?? "#7aa2ff"}22` : "rgba(255,255,255,0.06)",
+                            color: isTtsActive ? activeChar?.theme.accent : "var(--color-text-dim)",
+                            border: `1px solid ${isTtsActive ? `${activeChar?.theme.accent ?? "#7aa2ff"}55` : "rgba(255,255,255,0.08)"}`,
+                          }}
+                        >
+                          {ttsState === "loading" ? (
+                            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Volume2 className="h-3.5 w-3.5" />
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </motion.div>
-          ))}
+                )}
+              </motion.div>
+            );
+          })}
 
           {isStreaming && streamingText && (
             <motion.div
@@ -127,14 +167,15 @@ export function DialogueBox() {
                 />
               )}
               <div
-                className="max-w-[90%] px-4 py-2.5 rounded-2xl rounded-tl-sm text-sm leading-relaxed prose prose-invert prose-sm max-w-none"
+                className="max-w-[90%] rounded-2xl rounded-tl-sm px-4 py-2.5"
                 style={{
+                  ...chatTextStyle,
                   background: "rgba(255,255,255,0.04)",
                   color: "var(--color-text)",
                   border: "1px solid rgba(255,255,255,0.04)",
                 }}
               >
-                <Markdown>{streamingText}</Markdown>
+                <ChatMarkdown content={streamingText} fontSizePx={chatFontSizePx} />
                 <span className="typing-cursor" />
               </div>
             </motion.div>
@@ -201,7 +242,7 @@ export function DialogueBox() {
             <div className="text-2xl mb-2 opacity-30">
               {activeChar.displayName[0]}
             </div>
-            <p className="text-sm">
+            <p style={chatTextStyle}>
               <span style={{ color: activeChar.theme.nameColor }}>{activeChar.displayName}</span>
               과(와) 대화를 시작하세요
             </p>

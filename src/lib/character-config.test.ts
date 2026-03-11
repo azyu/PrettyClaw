@@ -19,11 +19,31 @@ const templateCharacters = [
       nameColor: "#a8c8ff",
     },
     tts: {
-      provider: "typecast",
       enabled: true,
-      voiceId: "voice-template",
+      provider: "typecast",
+      typecast: {
+        voiceId: "voice-template",
+        model: "ssfm-v30",
+      },
+      edge: {
+        voice: "ko-KR-SunHiNeural",
+      },
     },
     personaPrompt: "템플릿 프롬프트",
+  },
+  {
+    id: "sana",
+    displayName: "사나",
+    agentId: "prettyclaw-sana",
+    sessionKey: "prettyclaw-sana",
+    avatar: "/characters/sana-avatar.png",
+    sprite: "/characters/sana-sprite.png",
+    background: "/backgrounds/sana-room.png",
+    theme: {
+      accent: "#d79a63",
+      nameColor: "#f2c896",
+    },
+    personaPrompt: "사나 프롬프트",
   },
 ];
 
@@ -52,9 +72,16 @@ test("loadCharacterConfig loads ~/.config/prettyclaw/characters.json over the te
             nameColor: "#000000",
           },
           tts: {
-            provider: "typecast",
             enabled: false,
-            voiceId: "voice-config",
+            provider: "edge",
+            typecast: {
+              voiceId: "voice-config",
+              model: "ssfm-v21",
+            },
+            edge: {
+              voice: "ko-KR-InJoonNeural",
+              rate: "+10%",
+            },
           },
           personaPrompt: "설정 프롬프트",
         },
@@ -70,9 +97,14 @@ test("loadCharacterConfig loads ~/.config/prettyclaw/characters.json over the te
   assert.equal(result.source, "config");
   assert.equal(result.characters[0]?.displayName, "설정 유키");
   assert.equal(result.characters[0]?.personaPrompt, "설정 프롬프트");
-  assert.equal(result.characters[0]?.tts?.provider, "typecast");
+  assert.equal(result.characters[0]?.tts?.provider, "edge");
   assert.equal(result.characters[0]?.tts?.enabled, false);
-  assert.equal(result.characters[0]?.tts?.voiceId, "voice-config");
+  assert.equal(result.characters[0]?.tts?.typecast?.voiceId, "voice-config");
+  assert.equal(result.characters[0]?.tts?.typecast?.model, "ssfm-v21");
+  assert.equal(result.characters[0]?.tts?.edge?.voice, "ko-KR-InJoonNeural");
+  assert.equal(result.characters[0]?.tts?.edge?.rate, "+10%");
+  assert.equal(result.characters[1]?.id, "sana");
+  assert.equal(result.characters[1]?.displayName, "사나");
 });
 
 test("loadCharacterConfig seeds ~/.config/prettyclaw/characters.json from the template when missing", async () => {

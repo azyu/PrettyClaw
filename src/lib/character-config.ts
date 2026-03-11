@@ -19,6 +19,29 @@ async function readCharacterConfigFile(filePath: string) {
   return JSON.parse(raw) as CharacterConfig[];
 }
 
+function mergeTtsConfig(character: CharacterConfig, fallback: CharacterConfig | undefined) {
+  if (!character.tts) {
+    return fallback?.tts;
+  }
+
+  return {
+    ...fallback?.tts,
+    ...character.tts,
+    typecast: character.tts.typecast
+      ? {
+          ...fallback?.tts?.typecast,
+          ...character.tts.typecast,
+        }
+      : fallback?.tts?.typecast,
+    edge: character.tts.edge
+      ? {
+          ...fallback?.tts?.edge,
+          ...character.tts.edge,
+        }
+      : fallback?.tts?.edge,
+  };
+}
+
 export function mergeCharacterConfig(character: CharacterConfig, templateCharacters: CharacterConfig[]): CharacterConfig {
   const fallback = templateCharacters.find((item) => item.id === character.id);
   if (!fallback) {
@@ -32,12 +55,7 @@ export function mergeCharacterConfig(character: CharacterConfig, templateCharact
       ...fallback.theme,
       ...character.theme,
     },
-    tts: character.tts
-      ? {
-          ...fallback.tts,
-          ...character.tts,
-        }
-      : fallback.tts,
+    tts: mergeTtsConfig(character, fallback),
     spriteMeta: character.spriteMeta
       ? {
           ...fallback.spriteMeta,
@@ -61,9 +79,14 @@ export async function loadCharacterConfig(options: LoadCharacterConfigOptions = 
 
   try {
     if (existsSync(configFile)) {
-      const characters = (await readCharacterConfigFile(configFile)).map((character) =>
+      const configuredCharacters = await readCharacterConfigFile(configFile);
+      const mergedCharacters = configuredCharacters.map((character) =>
         mergeCharacterConfig(character, templateCharacters),
       );
+      const missingTemplateCharacters = templateCharacters.filter(
+        (templateCharacter) => !configuredCharacters.some((character) => character.id === templateCharacter.id),
+      );
+      const characters = [...mergedCharacters, ...missingTemplateCharacters];
       return { characters, source: "config" as const };
     }
   } catch (e) {

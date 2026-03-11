@@ -1,12 +1,47 @@
-# Typecast TTS 도입 검토
+# TTS 통합 메모
 
 검토일: 2026-03-11
+
+## 현재 상태
+
+2026-03-11 기준 현재 구현은 Typecast 단일 설계가 아니라 provider 공존형이다.
+
+- `CharacterConfig.tts`는 nested provider 스키마를 사용한다.
+- `tts.provider`가 활성 provider를 결정한다.
+- `tts.typecast`와 `tts.edge`는 동시에 저장할 수 있다.
+- `/api/tts`는 provider에 따라 Typecast API 또는 Edge TTS로 분기한다.
+- Edge TTS는 `node-edge-tts`를 사용하며, Typecast는 `TYPECAST_API_KEY`가 있을 때만 호출된다.
+
+예시:
+
+```json
+{
+  "tts": {
+    "enabled": true,
+    "provider": "edge",
+    "typecast": {
+      "voiceId": "tc_example",
+      "model": "ssfm-v30"
+    },
+    "edge": {
+      "voice": "ko-KR-SunHiNeural",
+      "outputFormat": "audio-24khz-48kbitrate-mono-mp3"
+    }
+  }
+}
+```
+
+주의:
+
+- `~/.config/prettyclaw/characters.json`이 실제 소스 오브 트루스다.
+- 기존 flat TTS 스키마(`voiceId`, `model`을 `tts` 루트에 두는 형태)는 자동 호환하지 않는다.
+- 로컬 설정 파일도 위 nested 스키마로 직접 바꿔야 한다.
 
 ## 목적
 
 PrettyClaw에서 캐릭터 응답, 예를 들어 유키의 assistant 답변을 Typecast TTS로 읽어주게 할 수 있는지 검토한다.
 
-## 결론
+## 초기 검토 결론
 
 도입 가능하다.
 
@@ -70,7 +105,7 @@ PrettyClaw에 유리한 점:
 - 현재 문서만 보면 재생 시작 전 합성 완료를 기다려야 하므로, 답변 직후 약간의 추가 지연이 생긴다.
 - 다만 PrettyClaw의 대화 길이와 캐릭터 챗 UX를 감안하면 첫 도입안으로는 충분히 실용적이다.
 
-## 권장 아키텍처
+## 초기 검토 아키텍처
 
 ### 1. 서버 경유 API route 추가
 
@@ -105,16 +140,23 @@ PrettyClaw에 유리한 점:
 
 따라서 음성 선택 정보는 `CharacterConfig`에 넣는 편이 맞다.
 
-예시 방향:
+초기 검토 당시 예시:
 
 ```ts
 tts?: {
-  provider: "typecast";
   enabled: boolean;
-  voiceId: string;
-  model?: "ssfm-v30" | "ssfm-v21";
-  language?: string;
-  emotionPreset?: "normal" | "happy" | "sad" | "angry" | "whisper" | "toneup" | "tonedown";
+  provider: "typecast" | "edge";
+  typecast?: {
+    voiceId: string;
+    model?: string;
+  };
+  edge?: {
+    voice: string;
+    rate?: string;
+    pitch?: string;
+    volume?: string;
+    outputFormat?: string;
+  };
 }
 ```
 
@@ -138,6 +180,23 @@ tts?: {
 - 동일 응답 중복 재생 방지
 
 여기서는 복잡한 Web Audio API보다 `HTMLAudioElement` 또는 `new Audio(blobUrl)` 기반이 첫 구현으로 충분하다.
+
+## 실제 반영 결과
+
+- `src/types/index.ts`
+  - TTS 타입이 provider 공존형 nested 스키마로 변경됨
+- `src/lib/character-config.ts`
+  - `tts.typecast`와 `tts.edge`를 각각 nested merge
+- `src/lib/tts.ts`
+  - 공통 normalize와 active provider resolution 담당
+- `src/lib/tts-server.ts`
+  - provider별 합성 분기 담당
+- `src/lib/edge-tts.ts`
+  - `node-edge-tts` wrapper 추가
+- `src/app/api/tts/route.ts`
+  - provider-aware 서버 라우트로 변경됨
+- `config/characters.template.json`
+  - Typecast와 Edge 설정을 함께 담는 기본 템플릿으로 변경됨
 
 ## 권장 변경 범위
 
@@ -292,9 +351,9 @@ tts?: {
 
 ## 추천 구현 순서
 
-1. `CharacterConfig`에 `tts` 필드 추가
-2. 유키에 대한 `voiceId`를 템플릿과 사용자 config에 정의
-3. `src/app/api/tts/route.ts` 추가
+1. `CharacterConfig`에 provider 공존형 `tts` 필드 정의
+2. 템플릿과 로컬 config를 nested TTS 스키마로 정리
+3. `/api/tts`를 provider-aware 서버 라우트로 유지
 4. 클라이언트 재생 유틸 추가
 5. `useAppStore.ts` final 이벤트에서만 재생 트리거
 6. 정지 시점 연결
@@ -317,6 +376,6 @@ tts?: {
 
 - Typecast 개요: https://typecast.ai/docs/ko/overview
 - Typecast 빠른 시작: https://typecast.ai/docs/ko/quickstart
-- Typecast JS/TS SDK: https://typecast.ai/docs/ko/sdk/javascript
 - Typecast TTS API: https://typecast.ai/docs/api-reference/text-to-speech/text-to-speech
 - Typecast Voices V2: https://typecast.ai/docs/api-reference/endpoint/voices/voice
+- node-edge-tts: https://github.com/SchneeHertz/node-edge-tts

@@ -18,16 +18,33 @@ export interface CharacterSpriteMeta {
   mouth?: SpriteOverlayPart;
 }
 
-export interface CharacterTtsConfig {
-  provider: "typecast";
-  enabled: boolean;
+export interface TypecastTtsConfig {
   voiceId: string;
+  model?: string;
 }
+
+export interface EdgeTtsConfig {
+  voice: string;
+  rate?: string;
+  pitch?: string;
+  volume?: string;
+  outputFormat?: string;
+}
+
+export interface CharacterTtsConfig {
+  provider: "typecast" | "edge";
+  enabled: boolean;
+  typecast?: TypecastTtsConfig;
+  edge?: EdgeTtsConfig;
+}
+
+export type TtsMessageState = "loading" | "ready" | "error";
 
 export interface TtsPlaybackRequest {
   id: string;
   characterId: string;
   text: string;
+  playbackToken: number;
 }
 
 export interface CharacterConfig {
