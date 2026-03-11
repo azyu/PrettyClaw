@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useRef, useState, type RefObject } from "react";
+import { getMaxSpriteDimension } from "@/lib/sprite-sizing";
 import type { CharacterConfig, SpriteOverlayPart, SpriteRect } from "@/types";
 
 const BLINK_MIN_DELAY_MS = 2400;
@@ -20,27 +21,6 @@ interface CharacterSpriteProps {
 interface RenderedSize {
   width: number;
   height: number;
-}
-
-function getMaxSpriteDimension(availableSize: RenderedSize | undefined, scale: number) {
-  if (!availableSize) {
-    return Math.floor(820 / scale);
-  }
-
-  const stageAspectRatio = availableSize.height / Math.max(availableSize.width, 1);
-  const widthUsage = stageAspectRatio > 1 ? 0.84 : 0.72;
-  const heightUsage = stageAspectRatio > 1 ? 0.72 : 0.88;
-
-  return Math.max(
-    0,
-    Math.floor(
-      Math.min(
-        availableSize.width * widthUsage,
-        availableSize.height * heightUsage,
-        820,
-      ) / scale,
-    ),
-  );
 }
 
 function getScaledRectStyle(rect: SpriteRect, sourceWidth: number, sourceHeight: number, renderedSize: RenderedSize) {
