@@ -16,7 +16,6 @@ import { useAppStore } from "@/stores/useAppStore";
 
 export default function Home() {
   const loadCharacters = useAppStore((s) => s.loadCharacters);
-  const bootstrapAgents = useAppStore((s) => s.bootstrapAgents);
   const connect = useAppStore((s) => s.connect);
   const connectionStatus = useAppStore((s) => s.connectionStatus);
   const isDialogueCollapsed = useAppStore((s) => s.isDialogueCollapsed);
@@ -38,7 +37,6 @@ export default function Home() {
 
     const initialize = async () => {
       await loadCharacters();
-      await bootstrapAgents();
       if (!cancelled) {
         setReadyToConnect(true);
       }
@@ -49,7 +47,7 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [bootstrapAgents, loadCharacters]);
+  }, [loadCharacters]);
 
   useEffect(() => {
     if (readyToConnect && connectionStatus === "disconnected") {

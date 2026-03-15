@@ -72,7 +72,6 @@ src/
 │   ├── globals.css           # Tailwind 4 + 커스텀 스타일
 │   └── api/
 │       ├── characters/route.ts   # 캐릭터 목록 API
-│       ├── bootstrap-agents/route.ts # 누락된 OpenClaw agent bootstrap
 │       ├── tts/route.ts          # provider별 TTS 서버 라우트
 │       └── push-persona/route.ts # 페르소나 푸시 API (deprecated)
 ├── components/

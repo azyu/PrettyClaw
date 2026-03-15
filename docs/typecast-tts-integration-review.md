@@ -122,7 +122,7 @@ PrettyClaw에 유리한 점:
 이유:
 
 - Typecast API 키를 브라우저에 노출하지 않기 위해서다.
-- 현재 프로젝트도 이미 `/api/characters`, `/api/bootstrap-agents` 같은 서버 경유 패턴을 사용한다.
+- 현재 프로젝트는 `/api/characters`, `/api/tts` 같은 서버 경유 패턴을 사용한다.
 
 권장 환경 변수:
 

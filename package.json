@@ -2,7 +2,20 @@
   "name": "prettyclaw",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "prettyclaw": "./bin/prettyclaw.mjs"
+  },
+  "files": [
+    "bin",
+    "config",
+    "public",
+    "src",
+    "next.config.ts",
+    "next-env.d.ts",
+    "postcss.config.mjs",
+    "tsconfig.json"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",

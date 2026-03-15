@@ -23,7 +23,6 @@ PrettyClaw/
 │   │   ├── globals.css
 │   │   └── api/
 │   │       ├── characters/route.ts
-│   │       ├── bootstrap-agents/route.ts
 │   │       ├── tts/route.ts          # provider별 서버 TTS
 │   │       └── push-persona/route.ts # deprecated
 │   ├── components/                   # 10 VN UI components
@@ -85,7 +84,7 @@ npm run build
 
 ## Known Gotchas
 
-- `/api/bootstrap-agents` does more than create missing agents. It also rewrites `IDENTITY.md`, `SOUL.md`, and `USER.md` for existing agent workspaces.
+- `prettyclaw init` is the only supported bootstrap path for creating or syncing OpenClaw agent workspaces.
 - `loadCharacterConfig()` reads `~/.config/prettyclaw/characters.json` as-is when it exists, and falls back to `config/characters.template.json` only when it does not.
 - TTS now uses nested provider config. `tts.provider` selects the active backend, and both `tts.typecast` and `tts.edge` may coexist.
 - Existing flat TTS config is not auto-migrated. If local TTS stops working after this change, update `~/.config/prettyclaw/characters.json` to the nested shape.
