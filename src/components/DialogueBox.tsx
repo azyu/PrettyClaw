@@ -10,6 +10,7 @@ import { ChatMarkdown } from "@/components/ChatMarkdown";
 import { Button } from "@/components/ui/button";
 import { getChatFontSizeStyle } from "@/lib/chat-font-size";
 import { isPayloadOnlyHistoryMessage, shouldDisplayHistoryMessage } from "@/lib/chat-history";
+import { stringifyLiveDeveloperPayload } from "@/lib/live-developer-payload";
 import { canReplayTts } from "@/lib/tts";
 import { useAppStore } from "@/stores/useAppStore";
 
@@ -62,6 +63,8 @@ export function DialogueBox() {
   const thinkingText = stream?.thinking ?? "";
   const toolName = stream?.toolName ?? "";
   const toolPhase = stream?.toolPhase ?? "idle";
+  const streamingDeveloperContent = stringifyLiveDeveloperPayload(stream?.developerBlocks ?? []);
+  const showStreamingDeveloperContent = developerMode && Boolean(streamingDeveloperContent);
   const chatTextStyle = getChatFontSizeStyle(chatFontSizePx) as CSSProperties;
   const toggleLabel = isDialogueCollapsed ? t("dialogue.expand") : t("dialogue.collapse");
   const toggleButton = (
@@ -86,7 +89,7 @@ export function DialogueBox() {
     if (!isDialogueCollapsed && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [visibleMessages.length, isDialogueCollapsed, streamingText]);
+  }, [visibleMessages.length, isDialogueCollapsed, streamingText, streamingDeveloperContent]);
 
   const recentMessages = visibleMessages.slice(-30);
 
@@ -208,36 +211,52 @@ export function DialogueBox() {
               );
             })}
 
-            {isStreaming && streamingText && (
+            {isStreaming && (streamingText || showStreamingDeveloperContent) && (
               <motion.div
                 key="streaming"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-3"
               >
-                {activeChar && (
-                  <NameTag
-                    name={activeChar.displayName}
-                    accent={activeChar.theme.accent}
-                    nameColor={activeChar.theme.nameColor}
-                  />
-                )}
-                <div
-                  className="max-w-[90%] rounded-2xl rounded-tl-sm px-4 py-2.5"
-                  style={{
-                    ...chatTextStyle,
-                    background: "rgba(255,255,255,0.04)",
-                    color: "var(--color-text)",
-                    border: "1px solid rgba(255,255,255,0.04)",
-                  }}
-                >
-                  <ChatMarkdown content={streamingText} fontSizePx={chatFontSizePx} />
-                  <span className="typing-cursor" />
-                </div>
+                {showStreamingDeveloperContent && streamingDeveloperContent ? (
+                  <pre
+                    className={`${streamingText ? "mb-2 max-w-[90%]" : "max-w-[90%]"} overflow-x-auto rounded-xl border px-3 py-2 text-[11px] leading-relaxed whitespace-pre-wrap break-all`}
+                    style={{
+                      background: "rgba(0,0,0,0.24)",
+                      color: "var(--color-text-dim)",
+                      borderColor: "rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    {streamingDeveloperContent}
+                  </pre>
+                ) : null}
+                {streamingText ? (
+                  <>
+                    {activeChar && (
+                      <NameTag
+                        name={activeChar.displayName}
+                        accent={activeChar.theme.accent}
+                        nameColor={activeChar.theme.nameColor}
+                      />
+                    )}
+                    <div
+                      className="max-w-[90%] rounded-2xl rounded-tl-sm px-4 py-2.5"
+                      style={{
+                        ...chatTextStyle,
+                        background: "rgba(255,255,255,0.04)",
+                        color: "var(--color-text)",
+                        border: "1px solid rgba(255,255,255,0.04)",
+                      }}
+                    >
+                      <ChatMarkdown content={streamingText} fontSizePx={chatFontSizePx} />
+                      <span className="typing-cursor" />
+                    </div>
+                  </>
+                ) : null}
               </motion.div>
             )}
 
-            {isStreaming && !streamingText && (
+            {isStreaming && !streamingText && !showStreamingDeveloperContent && (
               <motion.div
                 key="thinking"
                 initial={{ opacity: 0 }}
