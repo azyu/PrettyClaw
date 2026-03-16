@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { ScrollText, SendHorizontal, Square } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAppStore } from "@/stores/useAppStore";
 import { getConnectionIssueCopy } from "@/lib/gateway-connection";
 import { Button } from "@/components/ui/button";
@@ -29,12 +30,13 @@ export function PromptInput() {
   const activeCharacterId = useAppStore((s) => s.activeCharacterId);
   const characters = useAppStore((s) => s.characters);
   const toggleLog = useAppStore((s) => s.toggleLog);
+  const t = useTranslations();
 
   const sessionKey = useActiveSessionKey();
   const activeChar = characters.find((c) => c.id === activeCharacterId);
   const isStreaming = sessionKey ? (streamStates.get(sessionKey)?.streaming ?? false) : false;
   const canSend = text.trim() && connectionStatus === "connected" && !isStreaming;
-  const connectionCopy = getConnectionIssueCopy(connectionIssue);
+  const connectionCopy = getConnectionIssueCopy(connectionIssue, t);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -76,27 +78,27 @@ export function PromptInput() {
           variant="ghost"
           size="icon"
           className="shrink-0 rounded-lg bg-secondary/70 text-muted-foreground"
-          title="채팅 로그"
-          aria-label="채팅 로그"
+          title={t("prompt.openLog")}
+          aria-label={t("prompt.openLog")}
         >
           <ScrollText aria-hidden="true" className="h-4 w-4" />
         </Button>
 
         <textarea
           ref={inputRef}
-          aria-label={activeChar ? `${activeChar.displayName}에게 보낼 메시지` : "메시지 입력"}
+          aria-label={activeChar ? t("prompt.sendToCharacter", { name: activeChar.displayName }) : t("prompt.messageInput")}
           name="message"
           value={text}
           onChange={handleInput}
           onKeyDown={handleKeyDown}
           placeholder={
             pairingState === "required"
-              ? "기기 승인 후 다시 연결하세요…"
+              ? t("prompt.pairingRequired")
               : connectionStatus !== "connected"
-              ? connectionCopy?.title || "Gateway에 먼저 연결하세요…"
+              ? connectionCopy?.title || t("prompt.connectGatewayFirst")
               : activeChar
-              ? `${activeChar.displayName}에게 말을 걸어보세요…`
-              : "캐릭터를 선택하세요…"
+              ? t("prompt.talkToCharacter", { name: activeChar.displayName })
+              : t("prompt.selectCharacter")
           }
           disabled={connectionStatus !== "connected"}
           rows={1}
@@ -110,8 +112,8 @@ export function PromptInput() {
             variant="destructive"
             size="icon"
             className="shrink-0 rounded-lg bg-destructive/20 text-destructive hover:bg-destructive/30"
-            title="중단"
-            aria-label="중단"
+            title={t("prompt.stop")}
+            aria-label={t("prompt.stop")}
           >
             <Square aria-hidden="true" className="h-3.5 w-3.5 fill-current" />
           </Button>
@@ -125,8 +127,8 @@ export function PromptInput() {
               background: canSend ? activeChar?.theme.accent || "var(--color-accent)" : undefined,
               color: canSend ? "#fff" : undefined,
             }}
-            title="전송"
-            aria-label="전송"
+            title={t("prompt.send")}
+            aria-label={t("prompt.send")}
           >
             <SendHorizontal aria-hidden="true" className="h-4 w-4" />
           </Button>

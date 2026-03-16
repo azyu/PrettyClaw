@@ -1,7 +1,7 @@
 import { readFile, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { EdgeTtsConfig } from "../types";
+import type { EdgeTtsConfig } from "../types/index.ts";
 
 export const EDGE_TTS_OUTPUT_FORMAT = "audio-24khz-48kbitrate-mono-mp3";
 

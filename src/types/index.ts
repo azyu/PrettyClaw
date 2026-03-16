@@ -38,6 +38,14 @@ export interface CharacterTtsConfig {
   edge?: EdgeTtsConfig;
 }
 
+export const APP_LOCALES = ["en", "ko", "ja"] as const;
+export type AppLocale = (typeof APP_LOCALES)[number];
+export const DEFAULT_APP_LOCALE: AppLocale = "en";
+
+export type LocalizedText = Record<AppLocale, string>;
+export type LocalizedOptionalText = Partial<Record<AppLocale, string>>;
+export type LocalizedCharacterTtsConfig = Partial<Record<AppLocale, CharacterTtsConfig>>;
+
 export type TtsMessageState = "loading" | "ready" | "error";
 
 export interface TtsPlaybackRequest {
@@ -68,8 +76,9 @@ export interface CharacterConfig {
   description?: string;
   /** Optional text-to-speech voice configuration */
   tts?: CharacterTtsConfig;
-  personaPrompt: string;
 }
+
+export type LocalizedCharacterConfig = CharacterConfig;
 
 /** Gateway connection settings */
 export interface GatewaySettings {

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Settings2 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { useAppStore } from "@/stores/useAppStore";
 import { getConnectionIssueCopy, getConnectionStatusLabel } from "@/lib/gateway-connection";
 import { Button } from "@/components/ui/button";
@@ -18,8 +19,9 @@ export function CharacterSidebar() {
   const streamStates = useAppStore((s) => s.streamStates);
   const activeSessionKeys = useAppStore((s) => s.activeSessionKeys);
   const prefersReducedMotion = useReducedMotion();
-  const connectionCopy = getConnectionIssueCopy(connectionIssue);
-  const connectionLabel = getConnectionStatusLabel(connectionStatus, pairingState);
+  const t = useTranslations();
+  const connectionCopy = getConnectionIssueCopy(connectionIssue, t);
+  const connectionLabel = getConnectionStatusLabel(connectionStatus, pairingState, t);
 
   return (
     <div className="flex flex-col h-full w-[200px] min-w-[200px]"
@@ -105,9 +107,9 @@ export function CharacterSidebar() {
                       className="shrink-0 text-[10px]"
                       style={{ color: char.theme.accent }}
                       animate={prefersReducedMotion ? undefined : { opacity: [0.4, 1, 0.4] }}
-                      transition={prefersReducedMotion ? undefined : { duration: 1.5, repeat: Infinity }}
-                    >
-                      생성 중…
+                    transition={prefersReducedMotion ? undefined : { duration: 1.5, repeat: Infinity }}
+                  >
+                      {t("sidebar.thinking")}
                     </motion.span>
                   )}
                 </div>
@@ -131,7 +133,7 @@ export function CharacterSidebar() {
           className="w-full justify-center text-xs text-muted-foreground"
         >
           <Settings2 aria-hidden="true" className="h-3.5 w-3.5" />
-          설정
+          {t("sidebar.settings")}
         </Button>
       </div>
     </div>

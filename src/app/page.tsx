@@ -11,6 +11,7 @@ import { SessionActions } from "@/components/SessionActions";
 import { SessionHistoryPanel } from "@/components/SessionHistoryPanel";
 import { DebugInfo } from "@/components/DebugInfo";
 import { TtsPlayer } from "@/components/TtsPlayer";
+import { useCurrentAppLocale } from "@/i18n/client";
 import { resolveBackgroundFocusOffsetPx } from "@/lib/dialogue-layout";
 import { useAppStore } from "@/stores/useAppStore";
 
@@ -19,25 +20,22 @@ export default function Home() {
   const connect = useAppStore((s) => s.connect);
   const connectionStatus = useAppStore((s) => s.connectionStatus);
   const isDialogueCollapsed = useAppStore((s) => s.isDialogueCollapsed);
+  const locale = useCurrentAppLocale();
   const [readyToConnect, setReadyToConnect] = useState(false);
   const [isTallLayout, setIsTallLayout] = useState(false);
   const [isCenteredStageLayout, setIsCenteredStageLayout] = useState(false);
   const [dialogueDockHeight, setDialogueDockHeight] = useState(0);
   const [lastExpandedDialogueDockHeight, setLastExpandedDialogueDockHeight] = useState(0);
-  const initialized = useRef(false);
+  const didLoadCharacters = useRef(false);
   const dialogueDockRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (initialized.current) {
-      return;
-    }
-    initialized.current = true;
-
     let cancelled = false;
 
     const initialize = async () => {
-      await loadCharacters();
+      await loadCharacters(locale);
       if (!cancelled) {
+        didLoadCharacters.current = true;
         setReadyToConnect(true);
       }
     };
@@ -47,10 +45,10 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [loadCharacters]);
+  }, [loadCharacters, locale]);
 
   useEffect(() => {
-    if (readyToConnect && connectionStatus === "disconnected") {
+    if (didLoadCharacters.current && readyToConnect && connectionStatus === "disconnected") {
       connect();
     }
   }, [connect, connectionStatus, readyToConnect]);

@@ -1,0 +1,51 @@
+[
+  {
+    "id": "yuki",
+    "displayName": "ユキ",
+    "agentId": "prettyclaw-yuki",
+    "sessionKey": "prettyclaw-yuki",
+    "avatar": "/characters/yuki-avatar.png",
+    "sprite": "/characters/yuki-sprite.png",
+    "background": "/backgrounds/room-night.svg",
+    "theme": {
+      "accent": "#7aa2ff",
+      "nameColor": "#a8c8ff"
+    },
+    "description": "穏やかで優しい文芸部の1年生。読書と文章を書くことが好きで、好奇心も強い。",
+    "tts": {
+      "enabled": true,
+      "provider": "edge",
+      "edge": {
+        "voice": "ja-JP-NanamiNeural",
+        "outputFormat": "audio-24khz-48kbitrate-mono-mp3"
+      }
+    },
+    "spriteScale": 1,
+    "spriteMeta": {
+      "sourceWidth": 1536,
+      "sourceHeight": 1536,
+      "eyes": {
+        "rect": {
+          "x": 602,
+          "y": 204,
+          "width": 320,
+          "height": 120
+        },
+        "frames": ["/characters/parts/yuki-eyes-closed.svg"]
+      },
+      "mouth": {
+        "rect": {
+          "x": 690,
+          "y": 318,
+          "width": 150,
+          "height": 80
+        },
+        "frames": [
+          "/characters/parts/yuki-mouth-closed.svg",
+          "/characters/parts/yuki-mouth-mid.svg",
+          "/characters/parts/yuki-mouth-open.svg"
+        ]
+      }
+    }
+  }
+]

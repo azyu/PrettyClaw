@@ -3,20 +3,24 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { useLocale, useTranslations } from "next-intl";
 import { useAppStore } from "@/stores/useAppStore";
 import { Button } from "@/components/ui/button";
 
-function formatTime(ts?: number) {
+function formatTime(ts: number | undefined, locale: string, justNowLabel: string) {
   if (!ts) return "";
   const d = new Date(ts);
   const now = new Date();
   const diff = now.getTime() - d.getTime();
 
-  if (diff < 60_000) return "방금 전";
-  if (diff < 3600_000) return `${Math.floor(diff / 60_000)}분 전`;
-  if (diff < 86400_000) return `${Math.floor(diff / 3600_000)}시간 전`;
-  if (diff < 604800_000) return `${Math.floor(diff / 86400_000)}일 전`;
-  return d.toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
+  if (diff < 60_000) return justNowLabel;
+
+  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+  if (diff < 3600_000) return formatter.format(-Math.floor(diff / 60_000), "minute");
+  if (diff < 86400_000) return formatter.format(-Math.floor(diff / 3600_000), "hour");
+  if (diff < 604800_000) return formatter.format(-Math.floor(diff / 86400_000), "day");
+
+  return new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" }).format(d);
 }
 
 function formatTokens(n?: number) {
@@ -38,6 +42,8 @@ export function SessionHistoryPanel() {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   const prefersReducedMotion = useReducedMotion();
+  const locale = useLocale();
+  const t = useTranslations();
   const activeChar = characters.find((c) => c.id === activeCharacterId);
   const currentSessionKey = activeCharacterId
     ? (activeSessionKeys.get(activeCharacterId) || activeChar?.sessionKey || "")
@@ -96,14 +102,14 @@ export function SessionHistoryPanel() {
                   className="text-sm font-bold"
                   style={{ color: activeChar?.theme.nameColor || "var(--color-accent)" }}
                 >
-                  세션 — {activeChar?.displayName || ""}
+                  {t("session.title", { name: activeChar?.displayName || "" })}
                 </h2>
                 <Button
                   onClick={toggleSessionHistory}
                   variant="ghost"
                   size="icon"
                   className="text-muted-foreground hover:text-foreground"
-                  aria-label="세션 패널 닫기"
+                  aria-label={t("session.close")}
                 >
                   <X aria-hidden="true" className="h-4 w-4" />
                 </Button>
@@ -113,7 +119,7 @@ export function SessionHistoryPanel() {
               <div className="flex-1 overflow-y-auto overscroll-contain">
                 {characterSessions.length === 0 ? (
                   <p className="text-center text-sm py-8" style={{ color: "var(--color-text-dim)" }}>
-                    세션이 없습니다.
+                    {t("session.empty")}
                   </p>
                 ) : (
                   characterSessions.map((session) => {
@@ -143,17 +149,17 @@ export function SessionHistoryPanel() {
                                   color: activeChar?.theme.accent,
                                 }}
                               >
-                                현재
+                                {t("session.current")}
                               </span>
                             )}
                           </div>
                           <div className="flex items-center gap-3 mt-0.5">
                             <span className="text-[11px]" style={{ color: "var(--color-text-dim)" }}>
-                              {formatTime(session.updatedAt)}
+                              {formatTime(session.updatedAt, locale, t("session.justNow"))}
                             </span>
                             {session.totalTokens ? (
                               <span className="text-[11px]" style={{ color: "var(--color-text-dim)" }}>
-                                {formatTokens(session.totalTokens)} 토큰
+                                {t("session.tokens", { count: formatTokens(session.totalTokens) })}
                               </span>
                             ) : null}
                             {session.model ? (
@@ -173,7 +179,7 @@ export function SessionHistoryPanel() {
                               size="sm"
                               className="text-xs"
                             >
-                              이어가기
+                              {t("common.continue")}
                             </Button>
                           )}
                           <Button
@@ -182,7 +188,7 @@ export function SessionHistoryPanel() {
                             size="sm"
                             className="text-xs"
                           >
-                            {confirmDelete === session.key ? "정말 삭제?" : "삭제"}
+                            {confirmDelete === session.key ? t("common.confirmDelete") : t("common.delete")}
                           </Button>
                         </div>
                       </div>
@@ -193,7 +199,7 @@ export function SessionHistoryPanel() {
 
               {/* Footer */}
               <div className="px-5 py-2 border-t border-white/10 text-xs text-center" style={{ color: "var(--color-text-dim)" }}>
-                세션 {characterSessions.length}개
+                {t("common.sessionsCount", { count: characterSessions.length })}
               </div>
             </div>
           </motion.div>

@@ -1,0 +1,51 @@
+[
+  {
+    "id": "yuki",
+    "displayName": "유키",
+    "agentId": "prettyclaw-yuki",
+    "sessionKey": "prettyclaw-yuki",
+    "avatar": "/characters/yuki-avatar.png",
+    "sprite": "/characters/yuki-sprite.png",
+    "background": "/backgrounds/room-night.svg",
+    "theme": {
+      "accent": "#7aa2ff",
+      "nameColor": "#a8c8ff"
+    },
+    "description": "차분하고 다정한 문예부 1학년. 책과 글쓰기를 좋아하고 호기심이 많다.",
+    "tts": {
+      "enabled": true,
+      "provider": "edge",
+      "edge": {
+        "voice": "ko-KR-SunHiNeural",
+        "outputFormat": "audio-24khz-48kbitrate-mono-mp3"
+      }
+    },
+    "spriteScale": 1,
+    "spriteMeta": {
+      "sourceWidth": 1536,
+      "sourceHeight": 1536,
+      "eyes": {
+        "rect": {
+          "x": 602,
+          "y": 204,
+          "width": 320,
+          "height": 120
+        },
+        "frames": ["/characters/parts/yuki-eyes-closed.svg"]
+      },
+      "mouth": {
+        "rect": {
+          "x": 690,
+          "y": 318,
+          "width": 150,
+          "height": 80
+        },
+        "frames": [
+          "/characters/parts/yuki-mouth-closed.svg",
+          "/characters/parts/yuki-mouth-mid.svg",
+          "/characters/parts/yuki-mouth-open.svg"
+        ]
+      }
+    }
+  }
+]

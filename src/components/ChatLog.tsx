@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
 import { useRef, useEffect } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { ChatMarkdown } from "@/components/ChatMarkdown";
 import { getChatFontSizeStyle } from "@/lib/chat-font-size";
 import { useAppStore } from "@/stores/useAppStore";
@@ -17,6 +18,7 @@ export function ChatLog() {
   const messages = useAppStore((s) => s.messages);
   const activeSessionKeys = useAppStore((s) => s.activeSessionKeys);
   const chatFontSizePx = useAppStore((s) => s.chatFontSizePx);
+  const t = useTranslations();
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
@@ -71,14 +73,14 @@ export function ChatLog() {
                   className="text-sm font-bold"
                   style={{ color: activeChar?.theme.nameColor || "var(--color-accent)" }}
                 >
-                  대화 로그 — {activeChar?.displayName || ""}
+                  {t("chatLog.title", { name: activeChar?.displayName || "" })}
                 </h2>
                 <Button
                   onClick={toggleLog}
                   variant="ghost"
                   size="icon"
                   className="text-muted-foreground hover:text-foreground"
-                  aria-label="대화 로그 닫기"
+                  aria-label={t("chatLog.close")}
                 >
                   <X aria-hidden="true" className="h-4 w-4" />
                 </Button>
@@ -88,7 +90,7 @@ export function ChatLog() {
               <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 space-y-3">
                 {charMessages.length === 0 ? (
                   <p className="py-8 text-center" style={{ ...chatTextStyle, color: "var(--color-text-dim)" }}>
-                    아직 대화가 없습니다.
+                    {t("chatLog.empty")}
                   </p>
                 ) : (
                   charMessages.map((msg) => (
@@ -97,7 +99,7 @@ export function ChatLog() {
                         <div className="flex justify-end">
                           <div className="max-w-[80%]">
                             <span className="text-xs block text-right mb-0.5" style={{ color: "var(--color-text-dim)" }}>
-                              나
+                              {t("common.userLabel")}
                             </span>
                             <div
                               className="rounded-xl rounded-br-sm px-3 py-2"
@@ -133,7 +135,7 @@ export function ChatLog() {
 
               {/* Footer */}
               <div className="px-5 py-2 border-t border-white/10 text-xs text-center" style={{ color: "var(--color-text-dim)" }}>
-                메시지 {charMessages.length}개
+                {t("common.messagesCount", { count: charMessages.length })}
               </div>
             </div>
           </motion.div>

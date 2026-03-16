@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import type { CharacterConfig } from "../types";
+import type { CharacterConfig } from "../types/index.ts";
 import { synthesizeCharacterSpeech } from "./tts-server.ts";
 
 const typecastCharacter: CharacterConfig = {
@@ -23,7 +23,6 @@ const typecastCharacter: CharacterConfig = {
       model: "ssfm-v21",
     },
   },
-  personaPrompt: "유키 프롬프트",
 };
 
 const edgeCharacter: CharacterConfig = {

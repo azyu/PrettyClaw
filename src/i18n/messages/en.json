@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "title": "PrettyClaw",
+    "description": "Visual Novel Agent UI for OpenClaw"
+  },
+  "common": {
+    "settings": "Settings",
+    "close": "Close",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirmDelete": "Delete now?",
+    "continue": "Continue",
+    "messagesCount": "{count} messages",
+    "sessionsCount": "{count} sessions",
+    "userLabel": "You",
+    "backgroundAlt": "Background"
+  },
+  "language": {
+    "label": "Language",
+    "description": "Change the interface locale.",
+    "en": "English",
+    "ko": "Korean",
+    "ja": "Japanese"
+  },
+  "sidebar": {
+    "thinking": "Generating…",
+    "settings": "Settings"
+  },
+  "dialogue": {
+    "expand": "Expand dialogue",
+    "collapse": "Collapse dialogue",
+    "replayVoice": "Replay voice",
+    "ready": "Ready to chat",
+    "toolDone": "done"
+  },
+  "chatLog": {
+    "title": "Chat Log — {name}",
+    "close": "Close chat log",
+    "empty": "No conversation yet."
+  },
+  "prompt": {
+    "openLog": "Open chat log",
+    "messageInput": "Message input",
+    "sendToCharacter": "Message for {name}",
+    "pairingRequired": "Approve this device and reconnect…",
+    "connectGatewayFirst": "Connect to the Gateway first…",
+    "talkToCharacter": "Say something to {name}…",
+    "selectCharacter": "Choose a character…",
+    "stop": "Stop",
+    "send": "Send"
+  },
+  "settingsPanel": {
+    "title": "Settings",
+    "description": "Adjust general preferences and Gateway connection settings.",
+    "close": "Close settings",
+    "sections": "Settings sections",
+    "general": "General",
+    "gateway": "Gateway",
+    "chatFontTitle": "Dialogue font size",
+    "chatFontDescription": "Applies to the dialogue box and chat log.",
+    "chatFontLabel": "Font size",
+    "chatFontHelp": "You can enter a value between {min}px and {max}px.",
+    "ttsAutoplayTitle": "Autoplay TTS",
+    "ttsAutoplayDescription": "Automatically plays character speech after each response.",
+    "ttsAutoplayAria": "Autoplay TTS",
+    "gatewayTitle": "Connection settings",
+    "gatewayDescription": "Check the Gateway URL and token, then refresh the connection status.",
+    "gatewayUrl": "Gateway URL",
+    "gatewayToken": "Token",
+    "gatewayTokenPlaceholder": "Enter the Gateway token…",
+    "gatewayStatus": "Current status",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "deviceAuthTitle": "Gateway Device Auth",
+    "deviceAuthDescription": "Connects directly to OpenClaw Gateway with a browser device identity. If pairing is required after the first connection, approve it on the Gateway host.",
+    "characterConfigPath": "Character config"
+  },
+  "session": {
+    "newChat": "New chat",
+    "history": "Session history",
+    "title": "Sessions — {name}",
+    "close": "Close session panel",
+    "empty": "No sessions found.",
+    "current": "Current",
+    "tokens": "{count} tokens",
+    "justNow": "Just now"
+  },
+  "gateway": {
+    "status": {
+      "pairingRequired": "Approval required",
+      "connected": "Connected",
+      "connecting": "Connecting…",
+      "error": "Connection error",
+      "disconnected": "Disconnected"
+    },
+    "issues": {
+      "pairingRequiredTitle": "Browser device approval is required",
+      "pairingRequiredDescription": "Approve this browser on the Gateway host, then reconnect.",
+      "deviceIdentityTitle": "Browser device identity could not be created",
+      "deviceIdentityDescription": "Open the app from `http://localhost:3000` or `http://127.0.0.1:3000` and reconnect.",
+      "authTitle": "Gateway authentication failed",
+      "authDescription": "Check the Gateway URL and token again.",
+      "deviceTokenTitle": "The saved device token is invalid",
+      "deviceTokenDescription": "Clear the saved device token and reconnect. If the same error repeats, enter the Gateway token again.",
+      "genericTitle": "Gateway connection error"
+    }
+  }
+}

@@ -4,7 +4,7 @@ import type {
   TtsMessageState,
   TtsPlaybackRequest,
   TypecastTtsConfig,
-} from "../types";
+} from "../types/index.ts";
 
 export const TYPECAST_MODEL = "ssfm-v30";
 export const TYPECAST_AUDIO_FORMAT = "wav";

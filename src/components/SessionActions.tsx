@@ -1,6 +1,7 @@
 "use client";
 
 import { History, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAppStore } from "@/stores/useAppStore";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +10,7 @@ export function SessionActions() {
   const newChat = useAppStore((s) => s.newChat);
   const toggleSessionHistory = useAppStore((s) => s.toggleSessionHistory);
   const loadCharacterSessions = useAppStore((s) => s.loadCharacterSessions);
+  const t = useTranslations();
 
   if (connectionStatus !== "connected") return null;
 
@@ -25,10 +27,10 @@ export function SessionActions() {
         variant="secondary"
         size="sm"
         className="bg-black/50 text-foreground backdrop-blur-sm"
-        title="새 채팅"
+        title={t("session.newChat")}
       >
         <Plus aria-hidden="true" className="h-3.5 w-3.5" />
-        새 채팅
+        {t("session.newChat")}
       </Button>
 
       {/* Session History */}
@@ -37,10 +39,10 @@ export function SessionActions() {
         variant="secondary"
         size="sm"
         className="bg-black/50 text-foreground backdrop-blur-sm"
-        title="세션 기록"
+        title={t("session.history")}
       >
         <History aria-hidden="true" className="h-3.5 w-3.5" />
-        세션
+        {t("session.history")}
       </Button>
     </div>
   );

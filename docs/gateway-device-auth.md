@@ -50,6 +50,34 @@ openclaw devices approve --latest
 
 승인 후 PrettyClaw에서 다시 연결하면 된다.
 
+## `prettyclaw init --pair`
+
+bootstrap과 pairing 대기를 한 번에 묶고 싶다면 아래처럼 실행할 수 있다.
+
+```bash
+prettyclaw init --pair
+```
+
+동작 순서:
+
+1. PrettyClaw config seed + OpenClaw agent workspace sync
+2. CLI가 pending browser pairing request를 기다림
+3. 사용자가 PrettyClaw 페이지를 직접 열어 gateway 연결 시도
+4. CLI가 pending request를 감지하면 승인
+
+옵션:
+
+```bash
+prettyclaw init --pair --pair-wait-ms 60000
+prettyclaw init --pair --gateway-url ws://127.0.0.1:18789 --gateway-token <token>
+```
+
+제한:
+
+- 브라우저를 자동으로 열어주지는 않는다.
+- 승인 후 웹앱이 자동 재연결되지는 않는다.
+- 승인 후에는 페이지 새로고침 또는 수동 재연결이 필요하다.
+
 ## 문제 해결
 
 ### `device identity required`

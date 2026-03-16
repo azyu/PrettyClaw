@@ -1,5 +1,8 @@
+import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { homedir } from "node:os";
 import { join } from "node:path";
-import type { CharacterConfig } from "../types";
+import type { AppLocale, LocalizedCharacterConfig } from "../types/index.ts";
 
 export type SyncCharacterAgentResult = "created" | "updated";
 export interface OpenClawAgentListItem {
@@ -28,34 +31,92 @@ export interface BootstrapAgentsFailure {
 export type BootstrapAgentsResult = BootstrapAgentsSuccess | BootstrapAgentsFailure;
 
 interface SyncCharacterAgentDeps {
-  createAgent: (character: CharacterConfig) => Promise<void>;
-  writeBootstrapFiles: (character: CharacterConfig) => Promise<void>;
+  createAgent: (character: LocalizedCharacterConfig) => Promise<void>;
+  writeBootstrapFiles: (character: LocalizedCharacterConfig) => Promise<void>;
   readConfiguredAgentIds: () => Promise<Set<string>>;
 }
 
 interface BootstrapAgentsDeps {
-  loadCharacters: () => Promise<CharacterConfig[]>;
+  loadCharacters: () => Promise<LocalizedCharacterConfig[]>;
   readConfiguredAgentIds: () => Promise<Set<string>>;
   syncCharacterAgent: (
-    character: CharacterConfig,
+    character: LocalizedCharacterConfig,
     configuredAgentIds: Set<string>,
   ) => Promise<SyncCharacterAgentResult>;
 }
+
+interface LoadAgentPromptFilesOptions {
+  configDir?: string;
+  locale?: AppLocale;
+}
+
+export interface AgentPromptFiles {
+  identity: string;
+  soul: string;
+}
+
+const DEFAULT_CONFIG_DIR = join(homedir(), ".config", "prettyclaw");
 
 export function getWorkspaceDir(openClawHome: string, agentId: string) {
   return join(openClawHome, `workspace-${agentId}`);
 }
 
-export function buildIdentity(character: CharacterConfig) {
-  return `Name: ${character.displayName}\n`;
+function getAgentPromptFilePath(configDir: string, characterId: string, fileName: "IDENTITY.md" | "SOUL.md") {
+  return join(configDir, "agents", characterId, fileName);
 }
 
-export function buildSoul(character: CharacterConfig) {
-  return `${character.personaPrompt.trim()}\n`;
+function getLocalizedAgentPromptFilePath(
+  configDir: string,
+  characterId: string,
+  locale: AppLocale,
+  fileName: "IDENTITY.md" | "SOUL.md",
+) {
+  return join(configDir, "agents", characterId, locale, fileName);
 }
 
-export function buildUser(character: CharacterConfig) {
-  return `사용자는 PrettyClaw에서 ${character.displayName}와 대화하고 있습니다.\n`;
+export async function loadAgentPromptFiles(
+  character: LocalizedCharacterConfig,
+  options: LoadAgentPromptFilesOptions = {},
+): Promise<AgentPromptFiles> {
+  const configDir = options.configDir ?? DEFAULT_CONFIG_DIR;
+  const identityPath =
+    options.locale && existsSync(getLocalizedAgentPromptFilePath(configDir, character.id, options.locale, "IDENTITY.md"))
+      ? getLocalizedAgentPromptFilePath(configDir, character.id, options.locale, "IDENTITY.md")
+      : getAgentPromptFilePath(configDir, character.id, "IDENTITY.md");
+  const soulPath =
+    options.locale && existsSync(getLocalizedAgentPromptFilePath(configDir, character.id, options.locale, "SOUL.md"))
+      ? getLocalizedAgentPromptFilePath(configDir, character.id, options.locale, "SOUL.md")
+      : getAgentPromptFilePath(configDir, character.id, "SOUL.md");
+
+  if (!existsSync(soulPath)) {
+    throw new Error(`Missing PrettyClaw agent prompt file: ${soulPath}`);
+  }
+
+  if (!existsSync(identityPath)) {
+    throw new Error(`Missing PrettyClaw agent prompt file: ${identityPath}`);
+  }
+
+  const [identity, soul] = await Promise.all([
+    readFile(identityPath, "utf-8"),
+    readFile(soulPath, "utf-8"),
+  ]);
+
+  return {
+    identity,
+    soul,
+  };
+}
+
+export function buildUser(character: LocalizedCharacterConfig, locale: AppLocale) {
+  switch (locale) {
+    case "ko":
+      return `사용자는 PrettyClaw에서 ${character.displayName}와 대화하고 있습니다.\n`;
+    case "ja":
+      return `ユーザーは PrettyClaw で ${character.displayName} と会話しています。\n`;
+    case "en":
+    default:
+      return `The user is talking with ${character.displayName} in PrettyClaw.\n`;
+  }
 }
 
 export function extractConfiguredAgentIds(parsed: OpenClawAgentListItem[] | OpenClawAgentListObject) {
@@ -129,7 +190,7 @@ export async function bootstrapAgents(deps: BootstrapAgentsDeps): Promise<Bootst
 }
 
 export async function syncCharacterAgent(
-  character: CharacterConfig,
+  character: LocalizedCharacterConfig,
   configuredAgentIds: Set<string>,
   deps: SyncCharacterAgentDeps,
 ): Promise<SyncCharacterAgentResult> {

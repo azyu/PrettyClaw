@@ -6,6 +6,7 @@ export const runtime = "nodejs";
 
 interface TtsRequestBody {
   characterId?: string;
+  locale?: string;
   text?: string;
 }
 

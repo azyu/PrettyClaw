@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "title": "PrettyClaw",
+    "description": "OpenClaw 向けビジュアルノベル風エージェント UI"
+  },
+  "common": {
+    "settings": "設定",
+    "close": "閉じる",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "confirmDelete": "本当に削除しますか？",
+    "continue": "続ける",
+    "messagesCount": "メッセージ {count} 件",
+    "sessionsCount": "セッション {count} 件",
+    "userLabel": "あなた",
+    "backgroundAlt": "背景"
+  },
+  "language": {
+    "label": "言語",
+    "description": "インターフェースのロケールを変更します。",
+    "en": "英語",
+    "ko": "韓国語",
+    "ja": "日本語"
+  },
+  "sidebar": {
+    "thinking": "生成中…",
+    "settings": "設定"
+  },
+  "dialogue": {
+    "expand": "会話欄を開く",
+    "collapse": "会話欄を閉じる",
+    "replayVoice": "音声をもう一度再生",
+    "ready": "会話の準備ができました",
+    "toolDone": "完了"
+  },
+  "chatLog": {
+    "title": "会話ログ — {name}",
+    "close": "会話ログを閉じる",
+    "empty": "まだ会話がありません。"
+  },
+  "prompt": {
+    "openLog": "会話ログ",
+    "messageInput": "メッセージ入力",
+    "sendToCharacter": "{name} に送るメッセージ",
+    "pairingRequired": "この端末を承認してから再接続してください…",
+    "connectGatewayFirst": "先に Gateway に接続してください…",
+    "talkToCharacter": "{name} に話しかけてみてください…",
+    "selectCharacter": "キャラクターを選択してください…",
+    "stop": "停止",
+    "send": "送信"
+  },
+  "settingsPanel": {
+    "title": "設定",
+    "description": "一般設定と Gateway 接続設定を調整します。",
+    "close": "設定を閉じる",
+    "sections": "設定セクション",
+    "general": "一般",
+    "gateway": "Gateway",
+    "chatFontTitle": "会話文字サイズ",
+    "chatFontDescription": "会話欄と会話ログに適用されます。",
+    "chatFontLabel": "文字サイズ",
+    "chatFontHelp": "{min}px から {max}px まで入力できます。",
+    "ttsAutoplayTitle": "TTS 自動再生",
+    "ttsAutoplayDescription": "キャラクターの返答完了後に音声を自動再生します。",
+    "ttsAutoplayAria": "TTS 自動再生",
+    "gatewayTitle": "接続設定",
+    "gatewayDescription": "Gateway の URL とトークンを確認して、接続状態を更新します。",
+    "gatewayUrl": "Gateway URL",
+    "gatewayToken": "トークン",
+    "gatewayTokenPlaceholder": "Gateway トークンを入力してください…",
+    "gatewayStatus": "現在の状態",
+    "connect": "接続",
+    "disconnect": "切断",
+    "deviceAuthTitle": "Gateway Device Auth",
+    "deviceAuthDescription": "ブラウザの device identity で OpenClaw Gateway に直接接続します。初回接続後に pairing が必要な場合は Gateway ホストで承認してください。",
+    "characterConfigPath": "キャラクター設定"
+  },
+  "session": {
+    "newChat": "新しいチャット",
+    "history": "セッション履歴",
+    "title": "セッション — {name}",
+    "close": "セッションパネルを閉じる",
+    "empty": "セッションがありません。",
+    "current": "現在",
+    "tokens": "{count} トークン",
+    "justNow": "たった今"
+  },
+  "gateway": {
+    "status": {
+      "pairingRequired": "承認が必要",
+      "connected": "接続済み",
+      "connecting": "接続中…",
+      "error": "接続エラー",
+      "disconnected": "未接続"
+    },
+    "issues": {
+      "pairingRequiredTitle": "ブラウザ端末の承認が必要です",
+      "pairingRequiredDescription": "Gateway ホストでこのブラウザを承認してから再接続してください。",
+      "deviceIdentityTitle": "ブラウザの device identity を作成できません",
+      "deviceIdentityDescription": "`http://localhost:3000` または `http://127.0.0.1:3000` から開いて再接続してください。",
+      "authTitle": "Gateway 認証に失敗しました",
+      "authDescription": "Gateway URL と token の値をもう一度確認してください。",
+      "deviceTokenTitle": "保存された device token が無効です",
+      "deviceTokenDescription": "保存済みの device token を削除して再接続してください。同じエラーが続く場合は Gateway token を再入力してください。",
+      "genericTitle": "Gateway 接続エラー"
+    }
+  }
+}

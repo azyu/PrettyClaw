@@ -4,6 +4,7 @@ import Image from "next/image";
 import type { CSSProperties } from "react";
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { ChevronDown, ChevronUp, LoaderCircle, Volume2 } from "lucide-react";
 import { ChatMarkdown } from "@/components/ChatMarkdown";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ export function DialogueBox() {
   const chatFontSizePx = useAppStore((s) => s.chatFontSizePx);
   const isDialogueCollapsed = useAppStore((s) => s.isDialogueCollapsed);
   const toggleDialogueCollapsed = useAppStore((s) => s.toggleDialogueCollapsed);
+  const t = useTranslations();
 
   const sessionKey = useActiveSessionKey();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -58,7 +60,7 @@ export function DialogueBox() {
   const toolName = stream?.toolName ?? "";
   const toolPhase = stream?.toolPhase ?? "idle";
   const chatTextStyle = getChatFontSizeStyle(chatFontSizePx) as CSSProperties;
-  const toggleLabel = isDialogueCollapsed ? "대화창 펼치기" : "대화창 접기";
+  const toggleLabel = isDialogueCollapsed ? t("dialogue.expand") : t("dialogue.collapse");
   const toggleButton = (
     <Button
       onClick={toggleDialogueCollapsed}
@@ -166,7 +168,7 @@ export function DialogueBox() {
                             type="button"
                             onClick={() => requestTtsReplay(msg.id, msg.characterId, msg.content)}
                             disabled={ttsState === "loading"}
-                            aria-label="음성 다시 듣기"
+                            aria-label={t("dialogue.replayVoice")}
                             className="absolute bottom-2 right-2 inline-flex h-8 w-8 items-center justify-center rounded-full transition"
                             style={{
                               background: isTtsActive ? `${activeChar?.theme.accent ?? "#7aa2ff"}22` : "rgba(255,255,255,0.06)",
@@ -246,7 +248,7 @@ export function DialogueBox() {
                         &#9881;
                       </motion.span>
                       <span>{toolName}</span>
-                      {toolPhase === "done" && <span style={{ color: "#4ade80" }}>done</span>}
+                      {toolPhase === "done" && <span style={{ color: "#4ade80" }}>{t("dialogue.toolDone")}</span>}
                     </div>
                   )}
                   {thinkingText ? (
@@ -288,7 +290,7 @@ export function DialogueBox() {
                   />
                 </div>
                 <p style={chatTextStyle}>
-                  대화 준비 완료
+                  {t("dialogue.ready")}
                 </p>
               </div>
             )}

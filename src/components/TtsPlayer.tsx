@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useLocale } from "next-intl";
 import { createTtsAudioCache } from "@/lib/tts-audio-cache";
 import { useAppStore } from "@/stores/useAppStore";
 
 export function TtsPlayer() {
+  const locale = useLocale();
   const pendingTts = useAppStore((s) => s.pendingTts);
   const setActiveTtsMessageId = useAppStore((s) => s.setActiveTtsMessageId);
   const setTtsMessagePlaybackState = useAppStore((s) => s.setTtsMessagePlaybackState);
@@ -105,6 +107,7 @@ export function TtsPlayer() {
           },
           body: JSON.stringify({
             characterId: request.characterId,
+            locale,
             text: request.text,
           }),
           signal: controller.signal,
@@ -161,7 +164,7 @@ export function TtsPlayer() {
         controllerRef.current = null;
       }
     };
-  }, [pendingTts, setActiveTtsMessageId, setTtsMessagePlaybackState]);
+  }, [locale, pendingTts, setActiveTtsMessageId, setTtsMessagePlaybackState]);
 
   return null;
 }

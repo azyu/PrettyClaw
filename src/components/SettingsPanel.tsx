@@ -3,23 +3,22 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { X } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import {
   MAX_CHAT_FONT_SIZE_PX,
   MIN_CHAT_FONT_SIZE_PX,
   resolveChatFontSizeCommit,
 } from "@/lib/chat-font-size";
+import { APP_LOCALES } from "@/i18n/config";
+import { useAppLocale } from "@/i18n/client";
 import { useAppStore } from "@/stores/useAppStore";
 import { getConnectionIssueCopy, getConnectionStatusLabel } from "@/lib/gateway-connection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 
-const SETTINGS_TABS = [
-  { id: "general", label: "일반" },
-  { id: "gateway", label: "Gateway" },
-] as const;
-
-type SettingsTabId = (typeof SETTINGS_TABS)[number]["id"];
+const SETTINGS_TABS = ["general", "gateway"] as const;
+type SettingsTabId = (typeof SETTINGS_TABS)[number];
 
 export function SettingsPanel() {
   const showSettings = useAppStore((s) => s.showSettings);
@@ -35,6 +34,8 @@ export function SettingsPanel() {
   const disconnect = useAppStore((s) => s.disconnect);
   const ttsAutoplay = useAppStore((s) => s.ttsAutoplay);
   const setTtsAutoplay = useAppStore((s) => s.setTtsAutoplay);
+  const { locale, setLocale, isChangingLocale } = useAppLocale();
+  const t = useTranslations();
 
   const [url, setUrl] = useState(gatewaySettings.url);
   const [token, setToken] = useState(gatewaySettings.token);
@@ -58,8 +59,8 @@ export function SettingsPanel() {
   }, [showSettings]);
 
   const prefersReducedMotion = useReducedMotion();
-  const connectionCopy = getConnectionIssueCopy(connectionIssue);
-  const connectionLabel = getConnectionStatusLabel(connectionStatus, pairingState);
+  const connectionCopy = getConnectionIssueCopy(connectionIssue, t);
+  const connectionLabel = getConnectionStatusLabel(connectionStatus, pairingState, t);
   const panelTitleId = "settings-panel-title";
   const gatewayUrlId = "gateway-url";
   const gatewayTokenId = "gateway-token";
@@ -99,7 +100,7 @@ export function SettingsPanel() {
       return;
     }
 
-    setActiveTab(nextTab.id);
+    setActiveTab(nextTab);
     tabRefs.current[index]?.focus();
   };
 
@@ -162,10 +163,10 @@ export function SettingsPanel() {
               <div className="mb-5 flex items-center justify-between">
                 <div className="space-y-2">
                   <h2 id={panelTitleId} className="text-lg font-bold" style={{ color: "var(--color-accent)" }}>
-                    설정
+                    {t("settingsPanel.title")}
                   </h2>
                   <p className="text-xs leading-relaxed" style={{ color: "var(--color-text-dim)" }}>
-                    일반 환경과 Gateway 연결 설정을 조정합니다.
+                    {t("settingsPanel.description")}
                   </p>
                 </div>
                 <Button
@@ -173,7 +174,7 @@ export function SettingsPanel() {
                   variant="ghost"
                   size="icon"
                   className="text-muted-foreground hover:text-foreground"
-                  aria-label="설정 닫기"
+                  aria-label={t("settingsPanel.close")}
                 >
                   <X aria-hidden="true" className="h-4 w-4" />
                 </Button>
@@ -182,29 +183,29 @@ export function SettingsPanel() {
               <div
                 className="mb-5 grid grid-cols-2 gap-2 rounded-xl border border-border/70 bg-background/35 p-1"
                 role="tablist"
-                aria-label="설정 섹션"
+                aria-label={t("settingsPanel.sections")}
               >
                 {SETTINGS_TABS.map((tab, index) => {
-                  const isActive = activeTab === tab.id;
+                  const isActive = activeTab === tab;
 
                   return (
                     <Button
-                      key={tab.id}
+                      key={tab}
                       ref={(node) => {
                         tabRefs.current[index] = node;
                       }}
                       variant={isActive ? "secondary" : "ghost"}
                       size="sm"
                       role="tab"
-                      id={`settings-tab-${tab.id}`}
+                      id={`settings-tab-${tab}`}
                       aria-selected={isActive}
-                      aria-controls={`settings-tabpanel-${tab.id}`}
+                      aria-controls={`settings-tabpanel-${tab}`}
                       tabIndex={isActive ? 0 : -1}
                       className={isActive ? "justify-center" : "justify-center text-muted-foreground hover:text-foreground"}
-                      onClick={() => setActiveTab(tab.id)}
+                      onClick={() => setActiveTab(tab)}
                       onKeyDown={(event) => handleTabKeyDown(event, index)}
                     >
-                      {tab.label}
+                      {t(`settingsPanel.${tab}`)}
                     </Button>
                   );
                 })}
@@ -214,14 +215,50 @@ export function SettingsPanel() {
                 <div role="tabpanel" id={activePanelId} aria-labelledby={activeTabId} className="space-y-5">
                   <section
                     className="rounded-xl border border-border/80 bg-card/55 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.18)]"
+                    aria-labelledby="language-title"
+                  >
+                    <div className="mb-4">
+                      <p id="language-title" className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
+                        {t("language.label")}
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--color-text-dim)" }}>
+                        {t("language.description")}
+                      </p>
+                    </div>
+
+                    <label className="block">
+                      <span className="sr-only">{t("language.label")}</span>
+                      <select
+                        value={locale}
+                        onChange={(event) => {
+                          const nextLocale = event.target.value;
+                          if (APP_LOCALES.includes(nextLocale as (typeof APP_LOCALES)[number])) {
+                            setLocale(nextLocale as (typeof APP_LOCALES)[number]);
+                          }
+                        }}
+                        disabled={isChangingLocale}
+                        className="w-full rounded-lg border border-border/80 bg-background/70 px-3 py-2 text-sm shadow-sm outline-none transition focus:border-white/30"
+                        style={{ color: "var(--color-text)" }}
+                      >
+                        {APP_LOCALES.map((candidate) => (
+                          <option key={candidate} value={candidate}>
+                            {t(`language.${candidate}`)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </section>
+
+                  <section
+                    className="rounded-xl border border-border/80 bg-card/55 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.18)]"
                     aria-labelledby="chat-font-size-title"
                   >
                     <div className="mb-4">
                       <p id="chat-font-size-title" className="text-sm font-semibold" style={{ color: "var(--color-text)" }}>
-                        대화창 글자 크기
+                        {t("settingsPanel.chatFontTitle")}
                       </p>
                       <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--color-text-dim)" }}>
-                        대화창과 대화 로그에 적용합니다.
+                        {t("settingsPanel.chatFontDescription")}
                       </p>
                     </div>
 
@@ -232,7 +269,7 @@ export function SettingsPanel() {
                           className="mb-1.5 block text-xs"
                           style={{ color: "var(--color-text-dim)" }}
                         >
-                          글자 크기
+                          {t("settingsPanel.chatFontLabel")}
                         </label>
                         <Input
                           id={chatFontSizeId}
@@ -268,7 +305,7 @@ export function SettingsPanel() {
                     </div>
 
                     <p id={chatFontSizeHelpId} className="mt-2 text-xs" style={{ color: "var(--color-text-dim)" }}>
-                      {MIN_CHAT_FONT_SIZE_PX}px부터 {MAX_CHAT_FONT_SIZE_PX}px까지 입력할 수 있습니다.
+                      {t("settingsPanel.chatFontHelp", { min: MIN_CHAT_FONT_SIZE_PX, max: MAX_CHAT_FONT_SIZE_PX })}
                     </p>
                   </section>
 
@@ -279,17 +316,17 @@ export function SettingsPanel() {
                     <label htmlFor="tts-autoplay" className="flex cursor-pointer items-start justify-between gap-4">
                       <div>
                         <p id="tts-settings-title" className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
-                          TTS 자동 재생
+                          {t("settingsPanel.ttsAutoplayTitle")}
                         </p>
                         <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--color-text-dim)" }}>
-                          캐릭터 응답이 완료되면 Typecast 음성을 자동으로 재생합니다.
+                          {t("settingsPanel.ttsAutoplayDescription")}
                         </p>
                       </div>
                       <Switch
                         id="tts-autoplay"
                         checked={ttsAutoplay}
                         onCheckedChange={setTtsAutoplay}
-                        aria-label="TTS 자동 재생"
+                        aria-label={t("settingsPanel.ttsAutoplayAria")}
                       />
                     </label>
                   </section>
@@ -309,10 +346,10 @@ export function SettingsPanel() {
                           className="text-sm font-semibold"
                           style={{ color: "var(--color-text)" }}
                         >
-                          연결 설정
+                          {t("settingsPanel.gatewayTitle")}
                         </p>
                         <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--color-text-dim)" }}>
-                          Gateway 주소와 토큰을 확인한 뒤 연결 상태를 갱신합니다.
+                          {t("settingsPanel.gatewayDescription")}
                         </p>
                       </div>
                       <div
@@ -329,7 +366,7 @@ export function SettingsPanel() {
                           className="mb-1.5 block text-xs"
                           style={{ color: "var(--color-text-dim)" }}
                         >
-                          Gateway URL
+                          {t("settingsPanel.gatewayUrl")}
                         </label>
                         <Input
                           id={gatewayUrlId}
@@ -350,7 +387,7 @@ export function SettingsPanel() {
                           className="mb-1.5 block text-xs"
                           style={{ color: "var(--color-text-dim)" }}
                         >
-                          토큰
+                          {t("settingsPanel.gatewayToken")}
                         </label>
                         <Input
                           id={gatewayTokenId}
@@ -360,7 +397,7 @@ export function SettingsPanel() {
                           value={token}
                           onChange={(event) => setToken(event.target.value)}
                           className="border-border bg-background/70"
-                          placeholder="Gateway 토큰을 입력하세요…"
+                          placeholder={t("settingsPanel.gatewayTokenPlaceholder")}
                         />
                       </div>
 
@@ -368,7 +405,7 @@ export function SettingsPanel() {
                         <div className="flex items-center justify-between gap-3">
                           <div>
                             <p className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
-                              현재 상태
+                              {t("settingsPanel.gatewayStatus")}
                             </p>
                             <p className="mt-1 text-xs" style={{ color: "var(--color-text-dim)" }}>
                               {connectionLabel}
@@ -379,7 +416,7 @@ export function SettingsPanel() {
                             variant={connectionStatus === "connected" ? "destructiveSubtle" : "default"}
                             className="min-w-32"
                           >
-                            {connectionStatus === "connected" ? "연결 해제" : "연결하기"}
+                            {connectionStatus === "connected" ? t("settingsPanel.disconnect") : t("settingsPanel.connect")}
                           </Button>
                         </div>
                       </div>
@@ -413,14 +450,13 @@ export function SettingsPanel() {
                     aria-labelledby="device-auth-title"
                   >
                     <p id="device-auth-title" className="mb-2 text-sm font-medium" style={{ color: "var(--color-text)" }}>
-                      Gateway Device Auth
+                      {t("settingsPanel.deviceAuthTitle")}
                     </p>
                     <p>
-                      브라우저 device identity로 OpenClaw Gateway에 직접 연결합니다.
-                      첫 연결 후 pairing이 필요하면 Gateway 호스트에서 승인해야 합니다.
+                      {t("settingsPanel.deviceAuthDescription")}
                     </p>
                     <p className="mt-1">
-                      캐릭터 설정: <code>~/.config/prettyclaw/characters.json</code>
+                      {t("settingsPanel.characterConfigPath")}: <code>~/.config/prettyclaw/characters.json</code>
                     </p>
                   </section>
                 </div>

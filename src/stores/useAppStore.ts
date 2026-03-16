@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type {
+  AppLocale,
   CharacterConfig,
   ChatMessage,
   ConnectionStatus,
@@ -95,7 +96,7 @@ interface AppState {
   toggleDialogueCollapsed: () => void;
   toggleSessionHistory: () => void;
   setCharacters: (characters: CharacterConfig[]) => void;
-  loadCharacters: () => Promise<void>;
+  loadCharacters: (locale: AppLocale) => Promise<void>;
   loadAgents: () => Promise<void>;
   loadHistory: (sessionKey: string, characterId: string) => Promise<void>;
   ensureSession: (characterId: string) => Promise<void>;
@@ -477,9 +478,9 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   setCharacters: (characters) => set({ characters }),
 
-  loadCharacters: async () => {
+  loadCharacters: async (locale) => {
     try {
-      const res = await fetch("/api/characters");
+      const res = await fetch(`/api/characters?locale=${encodeURIComponent(locale)}`);
       if (!res.ok) return;
       const data = await res.json();
       if (data.characters && Array.isArray(data.characters)) {

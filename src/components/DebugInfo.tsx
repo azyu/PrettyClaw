@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useAppStore } from "@/stores/useAppStore";
 
 export function DebugInfo() {
@@ -9,6 +10,7 @@ export function DebugInfo() {
   const connectionStatus = useAppStore((s) => s.connectionStatus);
   const streamStates = useAppStore((s) => s.streamStates);
   const lastModel = useAppStore((s) => s.lastModel);
+  const t = useTranslations();
 
   const activeChar = characters.find((c) => c.id === activeCharacterId);
   const sessionKey = activeCharacterId
@@ -29,11 +31,11 @@ export function DebugInfo() {
       className="fixed bottom-2 right-2 z-30 text-[10px] leading-tight font-mono pointer-events-none select-none"
       style={{ color: "rgba(255,255,255,0.3)" }}
     >
-      <div>session: {sessionKey}</div>
-      <div>agent: {activeChar?.agentId || "—"}</div>
-      <div>model: {lastModel || "—"}</div>
-      <div>tts: {ttsLabel}</div>
-      <div>status: {connectionStatus}{stream?.streaming ? " | streaming" : ""}</div>
+      <div>{`session: ${sessionKey}`}</div>
+      <div>{`agent: ${activeChar?.agentId || "—"}`}</div>
+      <div>{`model: ${lastModel || "—"}`}</div>
+      <div>{`tts: ${ttsLabel}`}</div>
+      <div>{`status: ${connectionStatus}${stream?.streaming ? ` | ${t("sidebar.thinking")}` : ""}`}</div>
     </div>
   );
 }

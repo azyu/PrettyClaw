@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 /* eslint-disable @next/next/no-img-element */
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { CharacterSprite } from "@/components/CharacterSprite";
 import { useAppStore } from "@/stores/useAppStore";
 
@@ -21,6 +22,7 @@ export function SceneLayer({
   const activeSessionKeys = useAppStore((s) => s.activeSessionKeys);
   const spriteStageRef = useRef<HTMLDivElement>(null);
   const [spriteStageSize, setSpriteStageSize] = useState({ width: 0, height: 0 });
+  const t = useTranslations();
 
   const activeChar = characters.find((c) => c.id === activeCharacterId);
   const sessionKey = activeCharacterId
@@ -65,7 +67,7 @@ export function SceneLayer({
           >
             <img
               src={activeChar.background}
-              alt="background"
+              alt={t("common.backgroundAlt")}
               className="absolute inset-0 w-full h-full object-cover"
               style={{
                 objectPosition: isTallLayout

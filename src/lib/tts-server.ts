@@ -1,4 +1,4 @@
-import type { CharacterConfig, EdgeTtsConfig } from "../types";
+import type { CharacterConfig, EdgeTtsConfig } from "../types/index.ts";
 import { synthesizeEdgeTts } from "./edge-tts.ts";
 import {
   TYPECAST_AUDIO_FORMAT,

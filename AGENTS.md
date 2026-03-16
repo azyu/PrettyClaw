@@ -15,7 +15,10 @@
 ```text
 PrettyClaw/
 ├── config/
-│   └── characters.template.json  # seed template for character config
+│   ├── characters.en.template.json
+│   ├── characters.ko.template.json
+│   ├── characters.ja.template.json
+│   └── agents/                    # locale-specific prompt templates
 ├── src/
 │   ├── app/
 │   │   ├── page.tsx                  # initial load → bootstrap → auto-connect
@@ -28,8 +31,8 @@ PrettyClaw/
 │   ├── components/                   # 10 VN UI components
 │   ├── stores/useAppStore.ts         # single Zustand store (763 LOC) ⚠️
 │   ├── lib/
-│   │   ├── character-config.ts       # loads ~/.config/prettyclaw/characters.json or falls back to repo defaults
-│   │   ├── agent-bootstrap.ts        # syncs agent workspace prompt files
+│   │   ├── character-config.ts       # loads ~/.config/prettyclaw/characters.<locale>.json or falls back to repo defaults
+│   │   ├── agent-bootstrap.ts        # loads ~/.config/prettyclaw/agents/<id>/*.md and syncs workspace prompt files
 │   │   ├── tts.ts                    # normalize + active provider resolution
 │   │   ├── tts-server.ts             # provider dispatch for synthesis
 │   │   ├── edge-tts.ts               # node-edge-tts wrapper
@@ -68,7 +71,9 @@ npm run build
 - Keep Zustand updates immutable with `new Map()`, `new Set()`, spreads, etc.
 - Keep user-facing UI text in Korean
 - Keep `src/lib/` free of React and store dependencies
-- Treat `~/.config/prettyclaw/characters.json` as the active character source when present, with `config/characters.template.json` as fallback defaults
+- Treat `~/.config/prettyclaw/config.json` `language` as the bootstrap/runtime character locale
+- Treat `~/.config/prettyclaw/characters.<locale>.json` as the active character metadata source when present, with `config/characters.<locale>.template.json` as fallback defaults
+- Treat `~/.config/prettyclaw/agents/<id>/SOUL.md` and `IDENTITY.md` as the active bootstrap prompt source for each character
 - Add new default characters to `config/characters.template.json`
 - Keep TTS config in nested provider form: `tts.provider` + `tts.typecast`/`tts.edge`
 - For bug fixes, add a `node:test` reproduction test when practical
@@ -85,7 +90,8 @@ npm run build
 ## Known Gotchas
 
 - `prettyclaw init` is the only supported bootstrap path for creating or syncing OpenClaw agent workspaces.
-- `loadCharacterConfig()` reads `~/.config/prettyclaw/characters.json` as-is when it exists, and falls back to `config/characters.template.json` only when it does not.
+- `loadCharacterConfig()` prefers `~/.config/prettyclaw/characters.<locale>.json`, then `characters.json`, then `config/characters.<locale>.template.json`.
+- `prettyclaw init` reads `~/.config/prettyclaw/agents/<id>/SOUL.md` and `IDENTITY.md` and writes them into `~/.openclaw/workspace-<agentId>/`
 - TTS now uses nested provider config. `tts.provider` selects the active backend, and both `tts.typecast` and `tts.edge` may coexist.
 - Existing flat TTS config is not auto-migrated. If local TTS stops working after this change, update `~/.config/prettyclaw/characters.json` to the nested shape.
 - `push-persona/route.ts` is deprecated. Bootstrap sync is the current persona update path.
@@ -106,7 +112,7 @@ Add these checks when relevant:
 
 - UI changes: run `npm run dev` and do a manual smoke test
 - Gateway/session changes: verify actual `agent:<agentId>:<sessionKey>` routing
-- Character config changes: verify both `~/.config/prettyclaw/characters.json` and `~/.openclaw/workspace-<agentId>/SOUL.md`
+- Character config changes: verify `~/.config/prettyclaw/config.json`, `~/.config/prettyclaw/characters.<locale>.json`, `~/.config/prettyclaw/agents/<id>/<locale>/SOUL.md`, `~/.config/prettyclaw/agents/<id>/<locale>/IDENTITY.md`, and `~/.openclaw/workspace-<agentId>/SOUL.md`
 
 ## Environment
 
@@ -119,7 +125,9 @@ TYPECAST_API_KEY=optional-if-using-typecast
 
 Additional local files:
 
-- `~/.config/prettyclaw/characters.json` — local character overrides/additions
+- `~/.config/prettyclaw/config.json` — local app config (`timeZone`, `language`)
+- `~/.config/prettyclaw/characters.<locale>.json` — local character overrides/additions for each language
+- `~/.config/prettyclaw/agents/<id>/` — per-character SOUL.md / IDENTITY.md bootstrap source
 - `~/.openclaw/workspace-<agentId>/` — per-agent workspace written by bootstrap
 - Edge TTS does not need an API key, but it still runs server-side through `/api/tts`
 
