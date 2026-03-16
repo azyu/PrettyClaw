@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import type {
-  AppLocale,
   CharacterConfig,
   ChatMessage,
   ConnectionStatus,
@@ -15,6 +14,11 @@ import { GatewayClient } from "@/lib/gateway-client";
 import { clampChatFontSizePx, loadChatFontSizePx, saveChatFontSizePx } from "@/lib/chat-font-size";
 import { createTtsPlaybackRequest, setTtsMessageState } from "@/lib/tts";
 import { normalizeHistoryMessage } from "@/lib/chat-history";
+import {
+  appendLiveDeveloperPayload,
+  stringifyLiveDeveloperPayload,
+  type LiveDeveloperBlock,
+} from "@/lib/live-developer-payload";
 import { v4 as uuidv4 } from "uuid";
 
 /** Per-character streaming state */
@@ -24,6 +28,7 @@ interface StreamState {
   thinking: string;
   toolName: string;
   toolPhase: "idle" | "running" | "done";
+  developerBlocks: LiveDeveloperBlock[];
 }
 
 /** Session entry from Gateway */
@@ -98,7 +103,7 @@ interface AppState {
   toggleDialogueCollapsed: () => void;
   toggleSessionHistory: () => void;
   setCharacters: (characters: CharacterConfig[]) => void;
-  loadCharacters: (locale: AppLocale) => Promise<void>;
+  loadCharacters: () => Promise<void>;
   loadAgents: () => Promise<void>;
   loadHistory: (sessionKey: string, characterId: string) => Promise<void>;
   ensureSession: (characterId: string) => Promise<void>;
@@ -209,7 +214,14 @@ function toGatewaySessionKey(state: AppState, characterId: string, localKey: str
   return `agent:${agentId}:${localKey}`;
 }
 
-const EMPTY_STREAM: StreamState = { text: "", streaming: false, thinking: "", toolName: "", toolPhase: "idle" };
+const EMPTY_STREAM: StreamState = {
+  text: "",
+  streaming: false,
+  thinking: "",
+  toolName: "",
+  toolPhase: "idle",
+  developerBlocks: [],
+};
 
 function getStream(states: Map<string, StreamState>, id: string): StreamState {
   return states.get(id) || EMPTY_STREAM;
@@ -446,7 +458,14 @@ export const useAppStore = create<AppState>((set, get) => ({
     charMessages.set(sessionKey, [...existing, userMsg]);
     set((state) => ({
       messages: charMessages,
-      streamStates: setStream(streamStates, sessionKey, { streaming: true, text: "" }),
+      streamStates: setStream(streamStates, sessionKey, {
+        streaming: true,
+        text: "",
+        thinking: "",
+        toolName: "",
+        toolPhase: "idle",
+        developerBlocks: [],
+      }),
       pendingTts: null,
       ttsStopToken: state.ttsStopToken + 1,
     }));
@@ -478,6 +497,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         id: uuidv4(),
         role: "assistant",
         content: stream.text + " [interrupted]",
+        developerContent: stringifyLiveDeveloperPayload(stream.developerBlocks),
         timestamp: Date.now(),
         characterId: activeCharacterId,
       };
@@ -500,9 +520,9 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   setCharacters: (characters) => set({ characters }),
 
-  loadCharacters: async (locale) => {
+  loadCharacters: async () => {
     try {
-      const res = await fetch(`/api/characters?locale=${encodeURIComponent(locale)}`);
+      const res = await fetch("/api/characters");
       if (!res.ok) return;
       const data = await res.json();
       if (data.characters && Array.isArray(data.characters)) {
@@ -830,10 +850,12 @@ function handleChatEvent(
     if (finalText) {
       const { messages, characters, ttsAutoplay, ttsPlaybackToken } = get();
       const character = characters.find((item) => item.id === charId);
+      const stream = getStream(get().streamStates, sessionKey);
       const assistantMsg: ChatMessage = {
         id: uuidv4(),
         role: "assistant",
         content: finalText,
+        developerContent: stringifyLiveDeveloperPayload(stream.developerBlocks),
         timestamp: Date.now(),
         characterId: charId,
       };
@@ -893,10 +915,12 @@ function handleAgentEvent(
     // Thinking/reasoning text
     const text = (data.text || data.delta || "") as string;
     if (text) {
+      const currentStream = getStream(streamStates, sessionKey);
       set({
         streamStates: setStream(streamStates, sessionKey, {
           thinking: text,
           streaming: true,
+          developerBlocks: appendLiveDeveloperPayload(currentStream.developerBlocks, stream, data),
         }),
       });
     }
@@ -904,11 +928,13 @@ function handleAgentEvent(
     // Tool call info
     const name = (data.name || "") as string;
     const phase = (data.phase || "running") as string;
+    const currentStream = getStream(streamStates, sessionKey);
     set({
       streamStates: setStream(streamStates, sessionKey, {
-        toolName: name || getStream(streamStates, sessionKey).toolName,
+        toolName: name || currentStream.toolName,
         toolPhase: phase === "done" ? "done" : "running",
         streaming: true,
+        developerBlocks: appendLiveDeveloperPayload(currentStream.developerBlocks, stream, data),
       }),
     });
   } else if (stream === "lifecycle") {

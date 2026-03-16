@@ -308,3 +308,38 @@ test("initPrettyClaw fails when config_dir agent prompt files are missing", asyn
     );
   }
 });
+
+test("initPrettyClaw seeds locale character config and Sana prompt files before bootstrap", async () => {
+  const root = await mkdtemp(join(tmpdir(), "prettyclaw-cli-init-seeding-"));
+  const sourceRoot = process.cwd();
+  const templatePath = join(sourceRoot, "config", "characters.en.template.json");
+  const yukiIdentityPath = join(sourceRoot, "config", "agents", "en", "yuki", "IDENTITY.md");
+  const yukiSoulPath = join(sourceRoot, "config", "agents", "en", "yuki", "SOUL.md");
+  const sanaIdentityPath = join(sourceRoot, "config", "agents", "en", "sana", "IDENTITY.md");
+  const sanaSoulPath = join(sourceRoot, "config", "agents", "en", "sana", "SOUL.md");
+
+  await mkdir(join(root, "config", "agents", "en", "yuki"), { recursive: true });
+  await mkdir(join(root, "config", "agents", "en", "sana"), { recursive: true });
+  await writeFile(join(root, "config", "characters.en.template.json"), await readFile(templatePath, "utf-8"), "utf-8");
+  await writeFile(join(root, "config", "agents", "en", "yuki", "IDENTITY.md"), await readFile(yukiIdentityPath, "utf-8"), "utf-8");
+  await writeFile(join(root, "config", "agents", "en", "yuki", "SOUL.md"), await readFile(yukiSoulPath, "utf-8"), "utf-8");
+  await writeFile(join(root, "config", "agents", "en", "sana", "IDENTITY.md"), await readFile(sanaIdentityPath, "utf-8"), "utf-8");
+  await writeFile(join(root, "config", "agents", "en", "sana", "SOUL.md"), await readFile(sanaSoulPath, "utf-8"), "utf-8");
+
+  const result = await initPrettyClaw(root, "node", "en", root);
+
+  assert.equal(result.ok, false);
+  assert.equal(existsSync(join(root, ".config", "prettyclaw", "characters.en.json")), true);
+  assert.equal(existsSync(join(root, ".config", "prettyclaw", "agents", "yuki", "en", "IDENTITY.md")), true);
+  assert.equal(existsSync(join(root, ".config", "prettyclaw", "agents", "yuki", "en", "SOUL.md")), true);
+  assert.equal(existsSync(join(root, ".config", "prettyclaw", "agents", "sana", "en", "IDENTITY.md")), true);
+  assert.equal(existsSync(join(root, ".config", "prettyclaw", "agents", "sana", "en", "SOUL.md")), true);
+  assert.equal(
+    await readFile(join(root, ".config", "prettyclaw", "agents", "sana", "en", "IDENTITY.md"), "utf-8"),
+    await readFile(sanaIdentityPath, "utf-8"),
+  );
+  assert.equal(
+    await readFile(join(root, ".config", "prettyclaw", "agents", "sana", "en", "SOUL.md"), "utf-8"),
+    await readFile(sanaSoulPath, "utf-8"),
+  );
+});

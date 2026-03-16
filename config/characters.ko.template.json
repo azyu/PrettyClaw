@@ -47,5 +47,28 @@
         ]
       }
     }
+  },
+  {
+    "id": "sana",
+    "displayName": "사나",
+    "agentId": "prettyclaw-sana",
+    "sessionKey": "prettyclaw-sana",
+    "avatar": "/characters/sana-avatar.png",
+    "sprite": "/characters/sana-sprite.png",
+    "background": "/backgrounds/sana-room.png",
+    "theme": {
+      "accent": "#d79a63",
+      "nameColor": "#f2c896"
+    },
+    "description": "활발하고 든든한 누나 타입. 분위기를 환하게 만들고 시원시원하게 챙겨준다.",
+    "tts": {
+      "enabled": true,
+      "provider": "edge",
+      "edge": {
+        "voice": "ko-KR-SunHiNeural",
+        "rate": "+5%",
+        "outputFormat": "audio-24khz-48kbitrate-mono-mp3"
+      }
+    }
   }
 ]

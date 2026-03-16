@@ -147,3 +147,34 @@ test("loadCharacterConfig returns repository locale defaults without seeding loc
   assert.equal(result.characters[0]?.displayName, "ユキ");
   assert.equal(existsSync(configFile), false);
 });
+
+test("repository locale templates include Sana as the second default character", async () => {
+  const root = await mkdtemp(join(tmpdir(), "prettyclaw-repo-template-"));
+  const configDir = join(root, ".config", "prettyclaw");
+  const configFile = join(configDir, "characters.json");
+  const expectedDisplayNames = {
+    en: "Sana",
+    ko: "사나",
+    ja: "紗奈",
+  } as const;
+
+  for (const locale of ["en", "ko", "ja"] as const) {
+    const result = await loadCharacterConfig({
+      configDir,
+      configFile,
+      templateFile: join(process.cwd(), "config", `characters.${locale}.template.json`),
+      locale,
+    });
+
+    assert.equal(result.source, "template");
+    assert.equal(result.characters[1]?.id, "sana");
+    assert.equal(result.characters[1]?.displayName, expectedDisplayNames[locale]);
+    assert.equal(result.characters[1]?.agentId, "prettyclaw-sana");
+    assert.equal(result.characters[1]?.sessionKey, "prettyclaw-sana");
+    assert.equal(result.characters[1]?.avatar, "/characters/sana-avatar.png");
+    assert.equal(result.characters[1]?.sprite, "/characters/sana-sprite.png");
+    assert.equal(result.characters[1]?.background, "/backgrounds/sana-room.png");
+    assert.equal(result.characters[1]?.theme.accent, "#d79a63");
+    assert.equal(result.characters[1]?.theme.nameColor, "#f2c896");
+  }
+});

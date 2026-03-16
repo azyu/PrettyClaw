@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { CharacterConfig } from "../types/index.ts";
@@ -75,4 +75,15 @@ test("loadAgentPromptFiles fails with the missing absolute path", async () => {
       error instanceof Error &&
       error.message === `Missing PrettyClaw agent prompt file: ${join(root, "agents", "yuki", "IDENTITY.md")}`,
   );
+});
+
+test("repository includes Sana prompt templates for every locale", async () => {
+  for (const locale of ["en", "ko", "ja"] as const) {
+    const identityPath = join(process.cwd(), "config", "agents", locale, "sana", "IDENTITY.md");
+    const soulPath = join(process.cwd(), "config", "agents", locale, "sana", "SOUL.md");
+    const [identity, soul] = await Promise.all([readFile(identityPath, "utf-8"), readFile(soulPath, "utf-8")]);
+
+    assert.match(identity, /Sana|사나|紗奈/);
+    assert.match(soul, /Sana|사나|紗奈/);
+  }
 });

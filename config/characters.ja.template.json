@@ -47,5 +47,28 @@
         ]
       }
     }
+  },
+  {
+    "id": "sana",
+    "displayName": "紗奈",
+    "agentId": "prettyclaw-sana",
+    "sessionKey": "prettyclaw-sana",
+    "avatar": "/characters/sana-avatar.png",
+    "sprite": "/characters/sana-sprite.png",
+    "background": "/backgrounds/sana-room.png",
+    "theme": {
+      "accent": "#d79a63",
+      "nameColor": "#f2c896"
+    },
+    "description": "明るくて頼れるお姉さんタイプ。場をぱっと和ませながら、テンポよく引っ張ってくれる。",
+    "tts": {
+      "enabled": true,
+      "provider": "edge",
+      "edge": {
+        "voice": "ja-JP-NanamiNeural",
+        "rate": "+5%",
+        "outputFormat": "audio-24khz-48kbitrate-mono-mp3"
+      }
+    }
   }
 ]
