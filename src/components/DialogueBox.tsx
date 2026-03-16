@@ -9,6 +9,7 @@ import { ChevronDown, ChevronUp, LoaderCircle, Volume2 } from "lucide-react";
 import { ChatMarkdown } from "@/components/ChatMarkdown";
 import { Button } from "@/components/ui/button";
 import { getChatFontSizeStyle } from "@/lib/chat-font-size";
+import { isPayloadOnlyHistoryMessage, shouldDisplayHistoryMessage } from "@/lib/chat-history";
 import { canReplayTts } from "@/lib/tts";
 import { useAppStore } from "@/stores/useAppStore";
 
@@ -47,12 +48,14 @@ export function DialogueBox() {
   const chatFontSizePx = useAppStore((s) => s.chatFontSizePx);
   const isDialogueCollapsed = useAppStore((s) => s.isDialogueCollapsed);
   const toggleDialogueCollapsed = useAppStore((s) => s.toggleDialogueCollapsed);
+  const developerMode = useAppStore((s) => s.developerMode);
   const t = useTranslations();
 
   const sessionKey = useActiveSessionKey();
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeChar = characters.find((c) => c.id === activeCharacterId);
   const charMessages = sessionKey ? messages.get(sessionKey) || [] : [];
+  const visibleMessages = charMessages.filter((msg) => shouldDisplayHistoryMessage(msg, developerMode));
   const stream = sessionKey ? streamStates.get(sessionKey) : undefined;
   const isStreaming = stream?.streaming ?? false;
   const streamingText = stream?.text ?? "";
@@ -83,9 +86,9 @@ export function DialogueBox() {
     if (!isDialogueCollapsed && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [charMessages.length, isDialogueCollapsed, streamingText]);
+  }, [visibleMessages.length, isDialogueCollapsed, streamingText]);
 
-  const recentMessages = charMessages.slice(-30);
+  const recentMessages = visibleMessages.slice(-30);
 
   if (isDialogueCollapsed) {
     return (
@@ -117,6 +120,7 @@ export function DialogueBox() {
             {recentMessages.map((msg, i) => {
               const ttsState = ttsMessageStates.get(msg.id);
               const isTtsActive = activeTtsMessageId === msg.id;
+              const isPayloadOnly = isPayloadOnlyHistoryMessage(msg);
               const messageCharacter = msg.characterId
                 ? characters.find((character) => character.id === msg.characterId)
                 : activeChar;
@@ -146,44 +150,58 @@ export function DialogueBox() {
                     </div>
                   ) : (
                     <div>
-                      {activeChar && (
+                      {!isPayloadOnly && activeChar && (
                         <NameTag
                           name={activeChar.displayName}
                           accent={activeChar.theme.accent}
                           nameColor={activeChar.theme.nameColor}
                         />
                       )}
-                      <div
-                        className="relative max-w-[90%] rounded-2xl rounded-tl-sm px-4 py-2.5 pr-12"
-                        style={{
-                          ...chatTextStyle,
-                          background: "rgba(255,255,255,0.04)",
-                          color: "var(--color-text)",
-                          border: "1px solid rgba(255,255,255,0.04)",
-                        }}
-                      >
-                        <ChatMarkdown content={msg.content} fontSizePx={chatFontSizePx} />
-                        {showTtsButton && (
-                          <button
-                            type="button"
-                            onClick={() => requestTtsReplay(msg.id, msg.characterId, msg.content)}
-                            disabled={ttsState === "loading"}
-                            aria-label={t("dialogue.replayVoice")}
-                            className="absolute bottom-2 right-2 inline-flex h-8 w-8 items-center justify-center rounded-full transition"
-                            style={{
-                              background: isTtsActive ? `${activeChar?.theme.accent ?? "#7aa2ff"}22` : "rgba(255,255,255,0.06)",
-                              color: isTtsActive ? activeChar?.theme.accent : "var(--color-text-dim)",
-                              border: `1px solid ${isTtsActive ? `${activeChar?.theme.accent ?? "#7aa2ff"}55` : "rgba(255,255,255,0.08)"}`,
-                            }}
-                          >
-                            {ttsState === "loading" ? (
-                              <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <Volume2 className="h-3.5 w-3.5" />
-                            )}
-                          </button>
-                        )}
-                      </div>
+                      {!isPayloadOnly ? (
+                        <div
+                          className="relative max-w-[90%] rounded-2xl rounded-tl-sm px-4 py-2.5 pr-12"
+                          style={{
+                            ...chatTextStyle,
+                            background: "rgba(255,255,255,0.04)",
+                            color: "var(--color-text)",
+                            border: "1px solid rgba(255,255,255,0.04)",
+                          }}
+                        >
+                          <ChatMarkdown content={msg.content} fontSizePx={chatFontSizePx} />
+                          {showTtsButton && (
+                            <button
+                              type="button"
+                              onClick={() => requestTtsReplay(msg.id, msg.characterId, msg.content)}
+                              disabled={ttsState === "loading"}
+                              aria-label={t("dialogue.replayVoice")}
+                              className="absolute bottom-2 right-2 inline-flex h-8 w-8 items-center justify-center rounded-full transition"
+                              style={{
+                                background: isTtsActive ? `${activeChar?.theme.accent ?? "#7aa2ff"}22` : "rgba(255,255,255,0.06)",
+                                color: isTtsActive ? activeChar?.theme.accent : "var(--color-text-dim)",
+                                border: `1px solid ${isTtsActive ? `${activeChar?.theme.accent ?? "#7aa2ff"}55` : "rgba(255,255,255,0.08)"}`,
+                              }}
+                            >
+                              {ttsState === "loading" ? (
+                                <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <Volume2 className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      ) : null}
+                      {developerMode && msg.developerContent ? (
+                        <pre
+                          className={`${isPayloadOnly ? "max-w-[90%]" : "mt-2 max-w-[90%]"} overflow-x-auto rounded-xl border px-3 py-2 text-[11px] leading-relaxed whitespace-pre-wrap break-all`}
+                          style={{
+                            background: "rgba(0,0,0,0.24)",
+                            color: "var(--color-text-dim)",
+                            borderColor: "rgba(255,255,255,0.08)",
+                          }}
+                        >
+                          {msg.developerContent}
+                        </pre>
+                      ) : null}
                     </div>
                   )}
                 </motion.div>

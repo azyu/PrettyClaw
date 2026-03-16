@@ -142,6 +142,7 @@ export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  developerContent?: string;
   timestamp: number;
   characterId?: string;
 }

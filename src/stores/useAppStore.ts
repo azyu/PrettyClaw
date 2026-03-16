@@ -14,7 +14,7 @@ import type {
 import { GatewayClient } from "@/lib/gateway-client";
 import { clampChatFontSizePx, loadChatFontSizePx, saveChatFontSizePx } from "@/lib/chat-font-size";
 import { createTtsPlaybackRequest, setTtsMessageState } from "@/lib/tts";
-import { normalizeHistoryMessageContent } from "@/lib/chat-history";
+import { normalizeHistoryMessage } from "@/lib/chat-history";
 import { v4 as uuidv4 } from "uuid";
 
 /** Per-character streaming state */
@@ -73,6 +73,7 @@ interface AppState {
   isDialogueCollapsed: boolean;
   chatFontSizePx: number;
   ttsAutoplay: boolean;
+  developerMode: boolean;
   pendingTts: TtsPlaybackRequest | null;
   ttsMessageStates: Map<string, TtsMessageState>;
   activeTtsMessageId: string | null;
@@ -83,6 +84,7 @@ interface AppState {
   setGatewaySettings: (settings: GatewaySettings) => void;
   setChatFontSizePx: (size: number) => void;
   setTtsAutoplay: (enabled: boolean) => void;
+  setDeveloperMode: (enabled: boolean) => void;
   requestTtsReplay: (messageId: string, characterId: string | undefined, text: string) => void;
   setTtsMessagePlaybackState: (messageId: string, state: TtsMessageState | null) => void;
   setActiveTtsMessageId: (messageId: string | null) => void;
@@ -108,6 +110,7 @@ interface AppState {
 
 const LS_SESSION_PREFIX = "prettyclaw-session-";
 const LS_TTS_AUTOPLAY_KEY = "prettyclaw-tts-autoplay";
+const LS_DEVELOPER_MODE_KEY = "prettyclaw-developer-mode";
 const LS_GATEWAY_SETTINGS_KEY = "prettyclaw-gateway-settings";
 
 function getDefaultGatewaySettings(): GatewaySettings {
@@ -138,6 +141,19 @@ function loadTtsAutoplay(): boolean {
     return JSON.parse(raw) !== false;
   } catch {
     return true;
+  }
+}
+
+function saveDeveloperMode(enabled: boolean) {
+  try { localStorage.setItem(LS_DEVELOPER_MODE_KEY, JSON.stringify(enabled)); } catch {}
+}
+
+function loadDeveloperMode(): boolean {
+  try {
+    const raw = localStorage.getItem(LS_DEVELOPER_MODE_KEY);
+    return raw != null && JSON.parse(raw) === true;
+  } catch {
+    return false;
   }
 }
 
@@ -230,6 +246,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   isDialogueCollapsed: false,
   chatFontSizePx: loadChatFontSizePx(),
   ttsAutoplay: loadTtsAutoplay(),
+  developerMode: loadDeveloperMode(),
   pendingTts: null,
   ttsMessageStates: new Map(),
   activeTtsMessageId: null,
@@ -255,6 +272,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       ttsAutoplay: enabled,
       ...(enabled ? {} : { ttsStopToken: state.ttsStopToken + 1 }),
     }));
+  },
+
+  setDeveloperMode: (enabled) => {
+    saveDeveloperMode(enabled);
+    set({ developerMode: enabled });
   },
 
   requestTtsReplay: (messageId, characterId, text) => {
@@ -535,13 +557,17 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       const chatMessages: ChatMessage[] = history
         .filter((m) => m.role === "user" || m.role === "assistant")
-        .map((m) => ({
-          id: uuidv4(),
-          role: m.role as "user" | "assistant",
-          content: normalizeHistoryMessageContent(m.content),
-          timestamp: m.timestamp || Date.now(),
-          characterId,
-        }));
+        .map((m) => {
+          const normalized = normalizeHistoryMessage(m.content);
+          return {
+            id: uuidv4(),
+            role: m.role as "user" | "assistant",
+            content: normalized.content,
+            developerContent: normalized.developerContent,
+            timestamp: m.timestamp || Date.now(),
+            characterId,
+          };
+        });
 
       const charMessages = new Map(messages);
       const existing = charMessages.get(sessionKey) || [];

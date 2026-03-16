@@ -7,6 +7,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { ChatMarkdown } from "@/components/ChatMarkdown";
 import { getChatFontSizeStyle } from "@/lib/chat-font-size";
+import { isPayloadOnlyHistoryMessage, shouldDisplayHistoryMessage } from "@/lib/chat-history";
 import { useAppStore } from "@/stores/useAppStore";
 import { Button } from "@/components/ui/button";
 
@@ -18,6 +19,7 @@ export function ChatLog() {
   const messages = useAppStore((s) => s.messages);
   const activeSessionKeys = useAppStore((s) => s.activeSessionKeys);
   const chatFontSizePx = useAppStore((s) => s.chatFontSizePx);
+  const developerMode = useAppStore((s) => s.developerMode);
   const t = useTranslations();
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -27,6 +29,7 @@ export function ChatLog() {
     ? (activeSessionKeys.get(activeCharacterId) || activeChar?.sessionKey || null)
     : null;
   const charMessages = sessionKey ? messages.get(sessionKey) || [] : [];
+  const visibleMessages = charMessages.filter((msg) => shouldDisplayHistoryMessage(msg, developerMode));
   const dialogTitleId = "chat-log-title";
   const chatTextStyle = getChatFontSizeStyle(chatFontSizePx) as CSSProperties;
 
@@ -34,7 +37,7 @@ export function ChatLog() {
     if (showLog && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [showLog, charMessages.length]);
+  }, [showLog, visibleMessages.length]);
 
   return (
     <AnimatePresence>
@@ -88,12 +91,15 @@ export function ChatLog() {
 
               {/* Messages */}
               <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 space-y-3">
-                {charMessages.length === 0 ? (
+                {visibleMessages.length === 0 ? (
                   <p className="py-8 text-center" style={{ ...chatTextStyle, color: "var(--color-text-dim)" }}>
                     {t("chatLog.empty")}
                   </p>
                 ) : (
-                  charMessages.map((msg) => (
+                  visibleMessages.map((msg) => {
+                    const isPayloadOnly = isPayloadOnlyHistoryMessage(msg);
+
+                    return (
                     <div key={msg.id}>
                       {msg.role === "user" ? (
                         <div className="flex justify-end">
@@ -111,31 +117,48 @@ export function ChatLog() {
                         </div>
                       ) : (
                         <div className="max-w-[85%]">
-                          <span
-                            className="text-xs font-bold mb-0.5 inline-block px-1.5 py-0.5 rounded"
-                            style={{
-                              color: activeChar?.theme.nameColor,
-                              background: `${activeChar?.theme.accent}12`,
-                            }}
-                          >
-                            {activeChar?.displayName}
-                          </span>
-                          <div
-                            className="mt-0.5 rounded-xl rounded-tl-sm px-3 py-2"
-                            style={{ ...chatTextStyle, background: "rgba(255,255,255,0.04)", color: "var(--color-text)" }}
-                          >
-                            <ChatMarkdown content={msg.content} fontSizePx={chatFontSizePx} />
-                          </div>
+                          {!isPayloadOnly ? (
+                            <>
+                              <span
+                                className="text-xs font-bold mb-0.5 inline-block px-1.5 py-0.5 rounded"
+                                style={{
+                                  color: activeChar?.theme.nameColor,
+                                  background: `${activeChar?.theme.accent}12`,
+                                }}
+                              >
+                                {activeChar?.displayName}
+                              </span>
+                              <div
+                                className="mt-0.5 rounded-xl rounded-tl-sm px-3 py-2"
+                                style={{ ...chatTextStyle, background: "rgba(255,255,255,0.04)", color: "var(--color-text)" }}
+                              >
+                                <ChatMarkdown content={msg.content} fontSizePx={chatFontSizePx} />
+                              </div>
+                            </>
+                          ) : null}
+                          {developerMode && msg.developerContent ? (
+                            <pre
+                              className={`${isPayloadOnly ? "" : "mt-2 "}overflow-x-auto rounded-xl border px-3 py-2 text-[11px] leading-relaxed whitespace-pre-wrap break-all`}
+                              style={{
+                                background: "rgba(0,0,0,0.24)",
+                                color: "var(--color-text-dim)",
+                                borderColor: "rgba(255,255,255,0.08)",
+                              }}
+                            >
+                              {msg.developerContent}
+                            </pre>
+                          ) : null}
                         </div>
                       )}
                     </div>
-                  ))
+                  );
+                })
                 )}
               </div>
 
               {/* Footer */}
               <div className="px-5 py-2 border-t border-white/10 text-xs text-center" style={{ color: "var(--color-text-dim)" }}>
-                {t("common.messagesCount", { count: charMessages.length })}
+                {t("common.messagesCount", { count: visibleMessages.length })}
               </div>
             </div>
           </motion.div>

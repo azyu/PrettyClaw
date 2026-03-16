@@ -1,33 +1,52 @@
-function extractStructuredText(content: unknown): string | null {
-  if (Array.isArray(content)) {
-    const text = content
-      .map((block) => extractStructuredText(block))
-      .filter((value): value is string => typeof value === "string" && value.length > 0)
-      .join("");
+import type { ChatMessage } from "@/types";
 
-    return text ? text.trim() : null;
+interface NormalizedHistoryMessage {
+  content: string;
+  developerContent?: string;
+}
+
+function extractStructuredParts(content: unknown): {
+  textParts: string[];
+  developerBlocks: unknown[];
+} {
+  if (Array.isArray(content)) {
+    return content.reduce<{ textParts: string[]; developerBlocks: unknown[] }>(
+      (acc, block) => {
+        const next = extractStructuredParts(block);
+        return {
+          textParts: [...acc.textParts, ...next.textParts],
+          developerBlocks: [...acc.developerBlocks, ...next.developerBlocks],
+        };
+      },
+      { textParts: [], developerBlocks: [] },
+    );
   }
 
   if (!content || typeof content !== "object") {
-    return null;
+    return { textParts: [], developerBlocks: [] };
   }
 
   const block = content as Record<string, unknown>;
+  const blockType = typeof block.type === "string" ? block.type : null;
 
-  if (typeof block.text === "string" && block.type !== "thinking") {
-    return block.text;
+  if (blockType === "thinking" || blockType === "toolCall") {
+    return { textParts: [], developerBlocks: [content] };
+  }
+
+  if (typeof block.text === "string") {
+    return { textParts: [block.text], developerBlocks: [] };
   }
 
   if ("content" in block) {
-    return extractStructuredText(block.content);
+    return extractStructuredParts(block.content);
   }
 
-  return null;
+  return { textParts: [], developerBlocks: [] };
 }
 
-export function normalizeHistoryMessageContent(content: unknown): string {
+export function normalizeHistoryMessage(content: unknown): NormalizedHistoryMessage {
   if (content == null) {
-    return "";
+    return { content: "" };
   }
 
   if (typeof content === "string") {
@@ -35,20 +54,44 @@ export function normalizeHistoryMessageContent(content: unknown): string {
 
     if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
       try {
-        const extracted = extractStructuredText(JSON.parse(content) as unknown);
-        if (extracted) {
-          return extracted;
-        }
+        return normalizeHistoryMessage(JSON.parse(content) as unknown);
       } catch {}
     }
 
-    return content;
+    return { content };
   }
 
-  const extracted = extractStructuredText(content);
-  if (extracted) {
-    return extracted;
+  const { textParts, developerBlocks } = extractStructuredParts(content);
+  const extracted = textParts.join("").trim();
+
+  if (extracted || developerBlocks.length > 0) {
+    return {
+      content: extracted,
+      ...(developerBlocks.length > 0
+        ? {
+            developerContent: JSON.stringify(developerBlocks, null, 2),
+          }
+        : {}),
+    };
   }
 
-  return JSON.stringify(content);
+  return { content: JSON.stringify(content) };
+}
+
+export function normalizeHistoryMessageContent(content: unknown): string {
+  return normalizeHistoryMessage(content).content;
+}
+
+export function shouldDisplayHistoryMessage(message: ChatMessage, developerMode: boolean): boolean {
+  if (message.content.trim().length > 0) {
+    return true;
+  }
+
+  return developerMode && typeof message.developerContent === "string" && message.developerContent.length > 0;
+}
+
+export function isPayloadOnlyHistoryMessage(message: ChatMessage): boolean {
+  return message.content.trim().length === 0
+    && typeof message.developerContent === "string"
+    && message.developerContent.length > 0;
 }

@@ -34,6 +34,8 @@ export function SettingsPanel() {
   const disconnect = useAppStore((s) => s.disconnect);
   const ttsAutoplay = useAppStore((s) => s.ttsAutoplay);
   const setTtsAutoplay = useAppStore((s) => s.setTtsAutoplay);
+  const developerMode = useAppStore((s) => s.developerMode);
+  const setDeveloperMode = useAppStore((s) => s.setDeveloperMode);
   const { locale, setLocale, isChangingLocale } = useAppLocale();
   const t = useTranslations();
 
@@ -327,6 +329,28 @@ export function SettingsPanel() {
                         checked={ttsAutoplay}
                         onCheckedChange={setTtsAutoplay}
                         aria-label={t("settingsPanel.ttsAutoplayAria")}
+                      />
+                    </label>
+                  </section>
+
+                  <section
+                    className="rounded-xl border border-border/70 bg-secondary/20 p-4"
+                    aria-labelledby="developer-mode-title"
+                  >
+                    <label htmlFor="developer-mode" className="flex cursor-pointer items-start justify-between gap-4">
+                      <div>
+                        <p id="developer-mode-title" className="text-sm font-medium" style={{ color: "var(--color-text)" }}>
+                          {t("settingsPanel.developerModeTitle")}
+                        </p>
+                        <p className="mt-1 text-xs leading-relaxed" style={{ color: "var(--color-text-dim)" }}>
+                          {t("settingsPanel.developerModeDescription")}
+                        </p>
+                      </div>
+                      <Switch
+                        id="developer-mode"
+                        checked={developerMode}
+                        onCheckedChange={setDeveloperMode}
+                        aria-label={t("settingsPanel.developerModeAria")}
                       />
                     </label>
                   </section>
